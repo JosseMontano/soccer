@@ -10,7 +10,11 @@ export function categoryRoutes(router: FastifyInstance) {
   router.get(endpoint, async (request, reply) => {
     try {
 
-      const categories = await prisma.categories.findMany();
+      const categories = await prisma.categories.findMany({
+        include: {
+          typeCategories: true
+        }
+      });
 
       const response: ResponseType = {
         message: "Categorias obtenidas",

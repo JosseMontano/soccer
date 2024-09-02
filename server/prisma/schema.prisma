@@ -13,8 +13,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-model Categories {
+model TypeCategories {
   id        String   @id @default(cuid())
   name      String?
+  categories Categories[]
+}
+
+model Categories {
+  id                String          @id @default(cuid())
+  name              String?
+  typeCategoriesId  String?
+  typeCategories    TypeCategories? @relation(fields: [typeCategoriesId], references: [id])
 }
