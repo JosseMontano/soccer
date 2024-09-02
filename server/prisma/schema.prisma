@@ -24,9 +24,23 @@ model Categories {
   name              String?
   typeCategoriesId  String?
   typeCategories    TypeCategories? @relation(fields: [typeCategoriesId], references: [id])
+  clubs             ClubCategories[]
 }
 
 model Club {
-  id   Int    @id @default(autoincrement())
-  name String
+  id      String           @id @default(cuid())
+  name    String
+  categories ClubCategories[]
 }
+
+model ClubCategories {
+  id         String   @id @default(cuid())
+  clubId     String
+  categoryId String
+
+  club       Club      @relation(fields: [clubId], references: [id])
+  category   Categories @relation(fields: [categoryId], references: [id])
+
+  @@unique([clubId, categoryId])
+}
+

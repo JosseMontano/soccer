@@ -61,16 +61,12 @@ export function clubRoutes(router: FastifyInstance) {
     router.put(endPointClubs + "/:id", async (request, reply) => {
         try {
             const { id } = request.params as RequestParams;
-            const clubId = parseInt(id, 10);
-            if (isNaN(clubId)) {
-                return reply.status(400).send({ message: "id invalido" });
-            }
-
+       
             const data = request.body as ClubDTO;
             clubSchema.parse(data);
 
             const updatedClub = await prisma.club.update({
-                where: { id: clubId },
+                where: { id: id },
                 data: { name: data.name },
             });
 
@@ -94,13 +90,8 @@ export function clubRoutes(router: FastifyInstance) {
     router.delete(endPointClubs + "/:id", async (request, reply) => {
         try {
             const { id } = request.params as RequestParams;
-            const clubId = parseInt(id, 10);
-            if (isNaN(clubId)) {
-                return reply.status(400).send({ message: "Invalid club ID" });
-            }
-
             const deletedClub = await prisma.club.delete({
-                where: { id: clubId },
+                where: { id: id },
             });
 
             const response: ResponseType = {

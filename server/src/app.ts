@@ -4,6 +4,7 @@ import cors from '@fastify/cors'
 import { categoryRoutes } from './app/categories/categories.controller';
 import { config } from './common/config/config';
 import { clubRoutes } from './app/clubs/clubs.controller';
+import { clubCategoriesRoutes } from './app/clubsCategories/clubs.controller';
 
 const server = Fastify({ logger: true });
 
@@ -21,6 +22,7 @@ async function main() {
 
     categoryRoutes(server);
     clubRoutes(server);
+    clubCategoriesRoutes(server)
 
     try {
         server.listen({host:config.address, port: config.port}, (err) => { if (err) throw err })
