@@ -1,25 +1,33 @@
 import { PrismaClient } from "@prisma/client";
 import { FastifyInstance } from "fastify";
-import { clubSchema } from "./clubs.validations"; // Import the validation schema
+import { playerSchema } from "./player.validations"; // Import the validation schema
 import { ResponseType } from "../../common/interfaces/response";
 import { ZodError } from "zod";
 import { RequestParams } from "../../common/interfaces/request";
 
 const prisma = new PrismaClient();
-export const endPointClubs = "/clubs";
+export const endPointPlayers = "/players";
 
-export type ClubDTO = {
+
+export type PlayerDTO = {
     name: string;
+    Ci: number;
+    lastName: string;
+    nationality: string;
+    age: number;
+    commet: number;
+    birthdate: string;
+    photo: string;
 }
 
-export function clubRoutes(router: FastifyInstance) {
-    // Get all clubs
-    router.get(endPointClubs, async (request, reply) => {
+export function playerRoutes(router: FastifyInstance) {
+ 
+    router.get(endPointPlayers, async (request, reply) => {
         try {
-            const clubs = await prisma.club.findMany();
+            const players = await prisma.player.findMany();
             const response: ResponseType = {
-                message: "Clubs obtenidos existosamente",
-                data: clubs,
+                message: "Jugadores obtenidos existosamente",
+                data: players,
                 status: 200
             }
             return reply.status(200).send(response);
@@ -29,21 +37,28 @@ export function clubRoutes(router: FastifyInstance) {
         }
     });
 
-    // Create a new club
-    router.post(endPointClubs, async (request, reply) => {
-        try {
-            const data = request.body as ClubDTO;
-            clubSchema.parse(data); // Validate using Zod
 
-            const newClub = await prisma.club.create({
+    router.post(endPointPlayers, async (request, reply) => {
+        try {
+            const data = request.body as PlayerDTO;
+            playerSchema.parse(data); // Validate using Zod
+
+            const newPlayer = await prisma.player.create({
                 data: {
                     name: data.name,
-                },
+                    Ci: data.Ci,
+                    lastName: data.lastName,
+                    age: data.age,
+                    birthdate: data.birthdate,
+                    commet: data.commet,
+                    nationality: data.nationality,
+                    photo: data.photo
+                }
             });
 
             const response: ResponseType = {
-                message: `Club creado exitosamente`,
-                data: newClub,
+                message: `Jugador creado exitosamente`,
+                data: newPlayer,
                 status: 201
             }
             return reply.status(201).send(response);
@@ -57,22 +72,31 @@ export function clubRoutes(router: FastifyInstance) {
         }
     });
 
-    // Update a club by ID
-    router.put(endPointClubs + "/:id", async (request, reply) => {
+  
+    router.put(endPointPlayers + "/:id", async (request, reply) => {
         try {
             const { id } = request.params as RequestParams;
-       
-            const data = request.body as ClubDTO;
-            clubSchema.parse(data);
 
-            const updatedClub = await prisma.club.update({
+            const data = request.body as PlayerDTO;
+            playerSchema.parse(data);
+
+            const updatedPlayer = await prisma.player.update({
                 where: { id: id },
-                data: { name: data.name },
+                data: {
+                    name: data.name
+                    , Ci: data.Ci
+                    , lastName: data.lastName
+                    , age: data.age
+                    , birthdate: data.birthdate
+                    , commet: data.commet
+                    , nationality: data.nationality
+                    , photo: data.photo,
+                },
             });
 
             const response: ResponseType = {
-                message: `Club actualizado exitosamente`,
-                data: updatedClub,
+                message: `Jugador actualizado exitosamente`,
+                data: updatedPlayer,
                 status: 200
             }
             return reply.status(200).send(response);
@@ -86,17 +110,17 @@ export function clubRoutes(router: FastifyInstance) {
         }
     });
 
-    // Delete a club by ID
-    router.delete(endPointClubs + "/:id", async (request, reply) => {
+
+    router.delete(endPointPlayers + "/:id", async (request, reply) => {
         try {
             const { id } = request.params as RequestParams;
-            const deletedClub = await prisma.club.delete({
+            const deleteData = await prisma.player.delete({
                 where: { id: id },
             });
 
             const response: ResponseType = {
-                message: "Se elimino el club exitosamente",
-                data: deletedClub,
+                message: "Se elimino el jugador exitosamente",
+                data: deleteData,
                 status: 200
             }
             return reply.status(200).send(response);

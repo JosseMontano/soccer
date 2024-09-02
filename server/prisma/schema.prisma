@@ -31,7 +31,6 @@ model Club {
   id      String           @id @default(cuid())
   name    String
   categories ClubCategories[]
-  player Player[]
 }
 
 model ClubCategories {
@@ -60,10 +59,7 @@ model Player{
   nationality String
   age         Int
   commet      Int
-  birthdate   Int
+  birthdate   DateTime
   photo       String
-
-  clubId      String
-  club       Club      @relation(fields: [clubId], references: [id])
 
 }
