@@ -5,6 +5,7 @@ import { categoryRoutes } from './app/categories/categories.controller';
 import { config } from './common/config/config';
 import { clubRoutes } from './app/clubs/clubs.controller';
 import { clubCategoriesRoutes } from './app/clubsCategories/clubs.controller';
+import { passRouter } from './app/typeOfPass/typeOfPass.controller';
 
 const server = Fastify({ logger: true });
 
@@ -22,7 +23,8 @@ async function main() {
 
     categoryRoutes(server);
     clubRoutes(server);
-    clubCategoriesRoutes(server)
+    clubCategoriesRoutes(server);
+    passRouter(server);
 
     try {
         server.listen({host:config.address, port: config.port}, (err) => { if (err) throw err })

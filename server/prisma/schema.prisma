@@ -31,6 +31,7 @@ model Club {
   id      String           @id @default(cuid())
   name    String
   categories ClubCategories[]
+  player Player[]
 }
 
 model ClubCategories {
@@ -43,4 +44,26 @@ model ClubCategories {
 
   @@unique([clubId, categoryId])
 }
+model TyperOfPass {
+  id         String   @id @default(cuid())
+  name       String?
+}
+model Format {
+  id         String   @id @default(cuid())
+  name       String?
+}
+model Player{
+  id          String   @id @default(cuid())
+  name        String
+  Ci          Int
+  lastName    String
+  nationality String
+  age         Int
+  commet      Int
+  birthdate   Int
+  photo       String
 
+  clubId      String
+  club       Club      @relation(fields: [clubId], references: [id])
+
+}
