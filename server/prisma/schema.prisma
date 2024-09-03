@@ -18,6 +18,10 @@ model TypeCategories {
   name      String?
   categories Categories[]
 }
+model Format {
+  id         String   @id @default(cuid())
+  name       String?
+}
 
 model Categories {
   id                String          @id @default(cuid())
@@ -25,12 +29,6 @@ model Categories {
   typeCategoriesId  String?
   typeCategories    TypeCategories? @relation(fields: [typeCategoriesId], references: [id])
   clubs             ClubCategories[]
-}
-
-model Club {
-  id      String           @id @default(cuid())
-  name    String
-  categories ClubCategories[]
 }
 
 model ClubCategories {
@@ -43,14 +41,21 @@ model ClubCategories {
 
   @@unique([clubId, categoryId])
 }
+
+
+model Club {
+  id      String           @id @default(cuid())
+  name    String
+  categories ClubCategories[]
+  historyPlayers HistoryPlayer[]
+}
+
 model TyperOfPass {
   id         String   @id @default(cuid())
   name       String?
+  historyPlayers HistoryPlayer[]
 }
-model Format {
-  id         String   @id @default(cuid())
-  name       String?
-}
+
 model Player{
   id          String   @id @default(cuid())
   name        String
@@ -61,5 +66,29 @@ model Player{
   commet      Int
   birthdate   DateTime
   photo       String
+  historyPlayers HistoryPlayer[]
+}
 
+
+
+model HistoryPlayer {
+  id              String       @id @default(cuid())
+
+  clubId          String
+  playerId        String
+  typeOfPassId    String
+  
+  active          Boolean
+  allgoals        Int?
+  allfaults       Int?
+  allcardsYellow  Int?
+  allcardsRed     Int?
+
+  payInscription  Boolean
+
+  club            Club         @relation(fields: [clubId], references: [id])
+  player          Player       @relation(fields: [playerId], references: [id])
+  typeOfPass     TyperOfPass   @relation(fields: [typeOfPassId], references: [id])
+
+  @@unique([clubId, playerId, typeOfPassId])
 }
