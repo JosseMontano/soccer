@@ -33,6 +33,32 @@ export function historyPlayerRoutes(router: FastifyInstance) {
     }
   });
 
+
+  router.get(`${endpoint}/playerId/:playerId`, async (request, reply) => {
+    try {
+      const { playerId } = request.params as { playerId: string };
+      const data = await prisma.historyPlayer.findMany({
+        where: {
+          playerId: playerId,
+        },
+        include: {
+          player: true,
+          typeOfPass: true,
+        },
+      });
+
+      const response: ResponseType = {
+        message: "Historial de jugadores obtenido exitosamente",
+        data: data,
+        status: 200,
+      };
+      reply.status(200).send(response);
+    } catch (error) {
+      if (error instanceof Error)
+        return reply.status(500).send({ message: "Server error: " + error.message });
+    }
+  });
+
   // Actualizar un registro de history_player
   router.put(`${endpoint}/:id`, async (request, reply) => {
     const schema = z.object({
