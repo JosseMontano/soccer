@@ -71,4 +71,58 @@ export function historyPlayerRoutes(router: FastifyInstance) {
         return reply.status(500).send({ message: "Server error: " + error.message });
     }
   });
+  router.post(endpoint, async (request, reply) => {
+    const schema = z.object({
+      clubId: z.string(),
+      playerId: z.string(),
+      active: z.boolean(),
+      allgoals: z.number().optional(),
+      allfaults: z.number().optional(),
+      allcardsYellow: z.number().optional(),
+      allcardsRed: z.number().optional(),
+      typeOfPassId: z.string(),
+      payInscription: z.boolean(),
+    });
+  
+    try {
+      const parsedBody = schema.safeParse(request.body);
+  
+      if (!parsedBody.success) {
+        return reply.status(400).send({ message: "Datos no válidos", errors: parsedBody.error.errors });
+      }
+  
+      const newHistoryPlayer = await prisma.historyPlayer.create({
+        data: parsedBody.data,
+      });
+  
+      const response: ResponseType = {
+        message: "Historial de jugador creado exitosamente",
+        data: newHistoryPlayer,
+        status: 201,
+      };
+      reply.status(201).send(response);
+    } catch (error) {
+      if (error instanceof Error)
+        return reply.status(500).send({ message: "Server error: " + error.message });
+    }
+  });
+  router.delete(`${endpoint}/:id`, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+  
+      const deletedHistoryPlayer = await prisma.historyPlayer.delete({
+        where: { id },
+      });
+  
+      const response: ResponseType = {
+        message: "Historial de jugador eliminado exitosamente",
+        data: deletedHistoryPlayer,
+        status: 200,
+      };
+      reply.status(200).send(response);
+    } catch (error) {
+      if (error instanceof Error)
+        return reply.status(500).send({ message: "Server error: " + error.message });
+    }
+  });
 }

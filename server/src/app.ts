@@ -7,6 +7,7 @@ import { clubRoutes } from './app/clubs/clubs.controller';
 import { clubCategoriesRoutes } from './app/clubsCategories/clubs.controller';
 import { passRouter } from './app/typeOfPass/typeOfPass.controller';
 import { playerRoutes } from './app/player/player.controller';
+import { historyPlayerRoutes } from './app/historyPlayer/historyPlayer';
 
 const server = Fastify({ logger: true });
 
@@ -27,6 +28,7 @@ async function main() {
     clubCategoriesRoutes(server);
     passRouter(server);
     playerRoutes(server);
+    historyPlayerRoutes(server);
 
     try {
         server.listen({ host: config.address, port: config.port }, (err) => { if (err) throw err })
