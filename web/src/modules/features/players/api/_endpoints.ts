@@ -20,7 +20,7 @@ declare global {
     };
     "DELETE /players/:id": {
       params: { id: string };
-      request: never;
+      request: null;
       response: Player;
     };
   }

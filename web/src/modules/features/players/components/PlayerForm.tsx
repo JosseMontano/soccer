@@ -1,111 +1,123 @@
-import React, { useState } from "react";
 import { PlayerDTO } from "../api/dtos";
-import { Stringify } from "@/modules/core/types/Stringify";
-import useFetch from "@/modules/core/hooks/useFetch";
+import useFetch, { SetData } from "@/modules/core/hooks/useFetch";
 import { toastSuccess } from "@/modules/core/utils/toast";
 import { Player } from "../api/responses";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { PlayerDTOschema } from "../validations/PlayerDTO.schema";
 
 interface Props {
+  player: Player | null;
   closeModal: () => void;
-  modifyData: (data:Player) => void;
+  setData: SetData<Player[]>;
 }
 
-
-const PlayerForm = ({ closeModal,modifyData }: Props) => {
+const PlayerForm = ({ closeModal, setData, player }: Props) => {
   const { postData } = useFetch();
-  const mutation = postData("POST /players");
-  const [form, setForm] = useState<Stringify<PlayerDTO>>({
-    name: "",
-    lastName: "",
-    Ci: "",
-    birthdate: "",
-    age: "",
-    nationality: "",
-    commet: "",
-    photo:
-      "https://th.bing.com/th/id/OIP.peA5ILCfebCRr2LRch1BoAHaFj?rs=1&pid=ImgDetMain",
+  const postMutation = postData("POST /players");
+  const putMutation = postData("PUT /players/:id");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<PlayerDTO>({
+    defaultValues: {
+      name: player?.name,
+      lastName: player?.lastName,
+      Ci: player?.Ci,
+      birthdate: player?.birthdate.split("T")[0],
+      age: player?.age,
+      nationality: player?.nationality,
+      commet: player?.commet,
+      photo:
+        "https://th.bing.com/th/id/OIP.peA5ILCfebCRr2LRch1BoAHaFj?rs=1&pid=ImgDetMain",
+    },
+    resolver: yupResolver(PlayerDTOschema),
   });
   /* en express enviar la foto = investigar*/
 
-  const handleSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    e.preventDefault();
-    console.log(form);
-    mutation.mutate(
-      {
-        name: form.name,
-        lastName: form.lastName,
-        Ci: Number(form.Ci),
-        birthdate: form.birthdate+"T00:00:00.000Z",
-        age: Number(form.age),
-        nationality: form.nationality,
-        commet: Number(form.commet),
-        photo: form.photo,
-      },
-      {
-        onSuccess: (res) => {
-          toastSuccess(res.message);
-          closeModal();
-          modifyData(res.data);
+  const onSubmit = (form: PlayerDTO) => {
+    if (player === null) {
+      postMutation(
+        {
+          ...form,
+          birthdate: form.birthdate + "T00:00:00.000Z",
         },
-      }
-    );
+        {
+          onSuccess: (res) => {
+            toastSuccess(res.message);
+            closeModal();
+            setData((prev) => [...prev, res.data]);
+          },
+        }
+      );
+    } else {
+      putMutation(
+        {
+          ...form,
+          birthdate: form.birthdate + "T00:00:00.000Z",
+        },
+        {
+          params: { id: player.id },
+          onSuccess: (res) => {
+            toastSuccess(res.message);
+            closeModal();
+            setData((prev) =>
+              prev.map((v) => (v.id === res.data.id ? res.data : v))
+            );
+          },
+        }
+      );
+    }
   };
   /* onSuccess me da una data*/
   return (
-    <form className="flex flex-col gap-3">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
       <input
         type="text"
         placeholder="Ingrese el nombre del jugador"
-        value={form.name}
-        onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+        {...register("name")}
       />
+      <p>{errors.name?.message}</p>
       <input
         type="text"
         placeholder="Ingrese el apellido del jugador"
-        value={form.lastName}
-        onChange={(e) =>
-          setForm((prev) => ({ ...prev, lastName: e.target.value }))
-        }
+        {...register("lastName")}
       />
+      <p>{errors.lastName?.message}</p>
       <input
         type="number"
         placeholder="Ingrese el carnet del jugador"
-        value={form.Ci}
-        onChange={(e) => setForm((prev) => ({ ...prev, Ci: e.target.value }))}
+        {...register("Ci")}
       />
-
+      <p>{errors.Ci?.message}</p>
       <input
         type="date"
         placeholder="ingrese la fecha de nacimiento del jugador"
-        value={form.birthdate}
-        onChange={(e) =>
-          setForm((prev) => ({ ...prev, birthdate: e.target.value }))
-        }
+        {...register("birthdate")}
       />
+      <p>{errors.birthdate?.message}</p>
       <input
         type="number"
         placeholder="Ingrese la edad del jugador"
-        value={form.age}
-        onChange={(e) => setForm((prev) => ({ ...prev, age: e.target.value }))}
+        {...register("age")}
       />
+      <p>{errors.age?.message}</p>
       <input
         type="text"
         placeholder="Ingrese la nacionalidad del jugador"
-        value={form.nationality}
-        onChange={(e) =>
-          setForm((prev) => ({ ...prev, nationality: e.target.value }))
-        }
+        {...register("nationality")}
       />
+      <p>{errors.nationality?.message}</p>
       <input
         type="number"
         placeholder="Ingrese el commet del jugador"
-        value={form.commet}
-        onChange={(e) =>
-          setForm((prev) => ({ ...prev, commet: e.target.value }))
-        }
+        {...register("commet")}
       />
-
-      <button onClick={handleSubmit}>Registrar Jugador</button>
+      <p>{errors.commet?.message}</p>
+      <button type="submit">
+        {player ? "Editar Jugador" : "Registrar Jugador"}
+      </button>
     </form>
   );
 };
