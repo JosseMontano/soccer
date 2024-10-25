@@ -1,31 +1,26 @@
 import { PrismaClient } from "@prisma/client";
 import { FastifyInstance } from "fastify";
-import { playerSchema } from "./player.validations"; // Import the validation schema
+import { tournamentSchema } from "./tournament.validations"; // Importar el esquema de validación
 import { ResponseType } from "../../common/interfaces/response";
 import { ZodError } from "zod";
 import { RequestParams } from "../../common/interfaces/request";
 
 const prisma = new PrismaClient();
-export const endPointPlayers = "/players";
+export const endPointTournaments = "/tournaments";
 
-export type PlayerDTO = {
+export type TournamentDTO = {
   name: string;
-  Ci: number;
-  lastName: string;
-  nationality: string;
-  age: number;
-  commet: number;
-  birthdate: string;
-  photo: string;
+  dateStart: string; 
+  dateEnd: string;
+  formatId?: string;
 };
-
-export function playerRoutes(router: FastifyInstance) {
-  router.get(endPointPlayers, async (request, reply) => {
+export function tournamentRoutes(router: FastifyInstance) {
+  router.get(endPointTournaments, async (request, reply) => {
     try {
-      const players = await prisma.player.findMany();
+      const tournaments = await prisma.tournaments.findMany();
       const response: ResponseType = {
-        message: "Jugadores obtenidos existosamente",
-        data: players,
+        message: "Torneos obtenidos existosamente",
+        data: tournaments,
         status: 200,
       };
       return reply.status(200).send(response);
@@ -36,28 +31,22 @@ export function playerRoutes(router: FastifyInstance) {
           .send({ message: "Server error " + error.message });
     }
   });
-
-  router.post(endPointPlayers, async (request, reply) => {
+  router.post(endPointTournaments, async (request, reply) => {
     try {
-      const data = request.body as PlayerDTO;
-      playerSchema.parse(data);
+      const data = request.body as TournamentDTO;
+      tournamentSchema.parse(data); // Validación usando Zod
 
-      const newPlayer = await prisma.player.create({
+      const newTournament = await prisma.tournaments.create({
         data: {
           name: data.name,
-          Ci: data.Ci,
-          lastName: data.lastName,
-          age: data.age,
-          birthdate: data.birthdate,
-          commet: data.commet,
-          nationality: data.nationality,
-          photo: data.photo,
+          dateStart: new Date(data.dateStart),
+          dateEnd: new Date(data.dateEnd),
+          formatId: data.formatId,
         },
       });
-
       const response: ResponseType = {
-        message: `Jugador creado exitosamente`,
-        data: newPlayer,
+        message: "Torneo creado exitosamente",
+        data: newTournament,
         status: 201,
       };
       return reply.status(201).send(response);
@@ -74,31 +63,25 @@ export function playerRoutes(router: FastifyInstance) {
           .send({ message: "Server error " + error.message });
     }
   });
-
-  router.put(endPointPlayers + "/:id", async (request, reply) => {
+  router.put(endPointTournaments + "/:id", async (request, reply) => {
     try {
       const { id } = request.params as RequestParams;
 
-      const data = request.body as PlayerDTO;
-      playerSchema.parse(data);
+      const data = request.body as TournamentDTO;
+      tournamentSchema.parse(data);
 
-      const updatedPlayer = await prisma.player.update({
+      const updatedTournament = await prisma.tournaments.update({
         where: { id: id },
         data: {
           name: data.name,
-          Ci: data.Ci,
-          lastName: data.lastName,
-          age: data.age,
-          birthdate: data.birthdate,
-          commet: data.commet,
-          nationality: data.nationality,
-          photo: data.photo,
+          dateStart: new Date(data.dateStart),
+          dateEnd: new Date(data.dateEnd),
+          formatId: data.formatId,
         },
       });
-
       const response: ResponseType = {
-        message: `Jugador actualizado exitosamente`,
-        data: updatedPlayer,
+        message: "Torneo actualizado exitosamente",
+        data: updatedTournament,
         status: 200,
       };
       return reply.status(200).send(response);
@@ -115,16 +98,15 @@ export function playerRoutes(router: FastifyInstance) {
           .send({ message: "Server error " + error.message });
     }
   });
-
-  router.delete(endPointPlayers + "/:id", async (request, reply) => {
+  router.delete(endPointTournaments + "/:id", async (request, reply) => {
     try {
       const { id } = request.params as RequestParams;
-      const deleteData = await prisma.player.delete({
+      const deleteData = await prisma.tournaments.delete({
         where: { id: id },
       });
 
       const response: ResponseType = {
-        message: "Se elimino el jugador exitosamente",
+        message: "Torneo eliminado exitosamente",
         data: deleteData,
         status: 200,
       };
@@ -134,6 +116,6 @@ export function playerRoutes(router: FastifyInstance) {
         return reply
           .status(500)
           .send({ message: "Server error " + error.message });
-    }
-  });
+    }
+  });
 }

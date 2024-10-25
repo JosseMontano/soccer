@@ -21,6 +21,7 @@ model TypeCategories {
 model Format {
   id         String   @id @default(cuid())
   name       String?
+   tournaments Tournaments[]
 }
 
 model Categories {
@@ -91,4 +92,28 @@ model HistoryPlayer {
   typeOfPass     TyperOfPass   @relation(fields: [typeOfPassId], references: [id])
 
   @@unique([clubId, playerId, typeOfPassId])
+}
+model Tournaments {
+  id        String   @id @default(cuid())
+  name      String?
+  dateStart DateTime
+  dateEnd   DateTime
+  formatId  String?
+  format    Format?  @relation(fields: [formatId], references: [id])
+  games     Game[]
+}
+model Game {
+  id                    String    @id @default(cuid())
+  firstTeam             String?
+  secondTeam            String?
+  firstDate             DateTime?
+  secondDate            DateTime?
+  cardsYellow           Int?
+  cardsRed              Int?
+  faults                Int?
+  amountGoalsFirstTeam  Int?
+  amountGoalsSecondTeam Int?
+  winner                String?
+  tournamentId          String?
+  tournament            Tournaments? @relation(fields: [tournamentId], references: [id])
 }
