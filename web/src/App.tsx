@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ClubsPage from "./modules/features/clubs/pages/ClubsPage";
 import { QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { toastError } from "./modules/core/utils/toast";
+import GamePage from "./modules/features/game/pages/GamePage";
 
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
@@ -22,6 +23,7 @@ function App() {
       <Routes>
         <Route path="/" element={<PlayersPage />} />
         <Route path="/clubs" element={<ClubsPage />} />
+        <Route path="/games" element={<GamePage />} />
         {/* <Route path="*" element={<NotFound />} /> */}
       </Routes>
     </Router>
