@@ -1,9 +1,12 @@
+import IconCalendar from "./tabler/iconCalendar";
 import IconCheck from "./tabler/iconCheck";
+import IconChevronDown from "./tabler/iconChevronDown";
 import IconHome from "./tabler/iconHome";
 import IconPlayer from "./tabler/iconPlayer";
 import IconQuestion from "./tabler/iconQuestion";
 import IconSettings from "./tabler/iconSettings";
 import IconShield from "./tabler/iconShield";
+import IconTrophy from "./tabler/iconTrophy";
 import IconX from "./tabler/iconX";
 
 export enum ICON {
@@ -14,6 +17,9 @@ export enum ICON {
   PLAYER = "player",
   HOME = " home",
   SHIELD = "shield",
+  CALENDAR = "calendar",
+  TROPHY = "trophy",
+  CHEVRON_DOWN = "chevron_down",
 }
 
 interface Props {
@@ -29,6 +35,9 @@ const Icon = ({ type }: Props) => {
     [ICON.PLAYER]: <IconPlayer />,
     [ICON.HOME]: <IconHome />,
     [ICON.SHIELD]: <IconShield />,
+    [ICON.CALENDAR]: <IconCalendar />,
+    [ICON.TROPHY]: <IconTrophy />,
+    [ICON.CHEVRON_DOWN]: <IconChevronDown />,
   };
   return icons[type];
 };
