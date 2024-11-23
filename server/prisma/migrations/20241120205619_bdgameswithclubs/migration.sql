@@ -1,0 +1,8 @@
+-- AddForeignKey
+ALTER TABLE "Game" ADD CONSTRAINT "Game_firstTeamId_fkey" FOREIGN KEY ("firstTeamId") REFERENCES "Club"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Game" ADD CONSTRAINT "Game_secondTeamId_fkey" FOREIGN KEY ("secondTeamId") REFERENCES "Club"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Game" ADD CONSTRAINT "Game_winnerId_fkey" FOREIGN KEY ("winnerId") REFERENCES "Club"("id") ON DELETE SET NULL ON UPDATE CASCADE;

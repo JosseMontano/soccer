@@ -16,7 +16,7 @@ export function clubCategoriesRoutes(router: FastifyInstance) {
           clubId: clubId,
         },
         include: {
-          category: {include:{typeCategories:true}},
+          category: {include:{typeCategory:true}},
           
         },
       });

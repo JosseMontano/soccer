@@ -1,29 +1,24 @@
+import { FastifyInstance } from "fastify";
 import { PrismaClient } from "@prisma/client";
-import fastify, { FastifyInstance } from "fastify";
 import { ResponseType } from "../../common/interfaces/response";
 
-
-
 const prisma = new PrismaClient();
-export const endpoint = "/TypeOfPass"
+export const endPointTypeOfPass = "/typeofpass";
 
-export function passRouter (router:FastifyInstance){
-    
-    router.get(endpoint, async (request, reply) =>{
-        try {
-            const typerOfPass = await prisma.typerOfPass.findMany({               
-            });
-
-            const response: ResponseType = {
-                message: "Tipo de pase obtenido",
-                data: typerOfPass,
-                status: 200,
-            };
-            return reply.status(200).send(response);
-        } catch (error) {
-            if (error instanceof Error) {
-                return reply.status(500).send({ message: "Server error: " + error.message });
-            }
-        }
-    });
+export function typeOfPassRoutes(router: FastifyInstance) {
+  router.get(endPointTypeOfPass, async (request, reply) => {
+    try {
+      const typeOfPass = await prisma.typeOfPass.findMany();
+      const response: ResponseType = {
+        message: "Tipos de pase obtenidos exitosamente",
+        data: typeOfPass,
+        status: 200,
+      };
+      return reply.status(200).send(response);
+    } catch (error) {
+      return reply
+        .status(500)
+        .send({ message: "Error del servidor: " + (error as Error).message });
+    }
+  });
 }

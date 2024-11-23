@@ -1,8 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Prisma schema updated based on the database structure
 
 generator client {
   provider = "prisma-client-js"
@@ -13,107 +9,159 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model TypeCategories {
-  id        String   @id @default(cuid())
-  name      String?
-  categories Categories[]
+model Roles {
+  id    String  @id @default(cuid())
+  name  String  @unique
+  users Users[]
 }
-model Format {
-  id         String   @id @default(cuid())
-  name       String?
-   tournaments Tournaments[]
+
+model Users {
+  id       String @id @default(cuid())
+  email    String @unique
+  password String
+  roleId   String
+  role     Roles  @relation(fields: [roleId], references: [id])
+}
+
+model TypeCategories {
+  id         String       @id @default(cuid())
+  name       String       @unique
+  categories Categories[]
 }
 
 model Categories {
-  id                String          @id @default(cuid())
-  name              String?
-  typeCategoriesId  String?
-  typeCategories    TypeCategories? @relation(fields: [typeCategoriesId], references: [id])
-  clubs             ClubCategories[]
+  id             String           @id @default(cuid())
+  name           String           @unique
+  typeCategoryId String
+  typeCategory   TypeCategories   @relation(fields: [typeCategoryId], references: [id])
+  minAge         Int
+  maxAge         Int
+  clubCategories ClubCategories[]
+  tournaments    Tournaments[]
+}
+
+model Club {
+  id             String           @id @default(cuid())
+  name           String           @unique
+  logo           String? // Logo opcional del club
+  players        Player[] // Relación con jugadores
+  clubCategories ClubCategories[] // Relación con categorías del club
+  historyPlayers HistoryPlayer[] // Relación con historial de jugadores
+
+  gamesAsFirstTeam  Game[] @relation("FirstTeam")
+  gamesAsSecondTeam Game[] @relation("SecondTeam")
+  gamesAsWinner     Game[] @relation("Winner")
 }
 
 model ClubCategories {
-  id         String   @id @default(cuid())
+  id         String @id @default(cuid())
   clubId     String
   categoryId String
 
-  club       Club      @relation(fields: [clubId], references: [id])
-  category   Categories @relation(fields: [categoryId], references: [id])
+  club     Club       @relation(fields: [clubId], references: [id])
+  category Categories @relation(fields: [categoryId], references: [id])
 
-  @@unique([clubId, categoryId])
+  @@unique([clubId, categoryId]) // Ensure a club is not linked to the same category more than once
 }
 
-
-model Club {
-  id      String           @id @default(cuid())
-  name    String
-  categories ClubCategories[]
+model TypeOfPass {
+  id             String          @id @default(cuid())
+  name           String          @unique // Example: "Definitivo", "Préstamo"
   historyPlayers HistoryPlayer[]
 }
 
-model TyperOfPass {
-  id         String   @id @default(cuid())
-  name       String?
-  historyPlayers HistoryPlayer[]
+model Player {
+  id             String          @id @default(cuid())
+  name           String
+  lastName       String
+  nationality    String
+  commet         String? 
+  birthdate      DateTime
+  gender         String?
+  photo          String?
+  clubId         String
+  club           Club            @relation(fields: [clubId], references: [id])
+  historyPlayers HistoryPlayer[] 
+  event          GameEvent[]
 }
-
-model Player{
-  id          String   @id @default(cuid())
-  name        String
-  Ci          Int
-  lastName    String
-  nationality String
-  age         Int
-  commet      Int
-  birthdate   DateTime
-  photo       String
-  historyPlayers HistoryPlayer[]
-}
-
-
 
 model HistoryPlayer {
-  id              String       @id @default(cuid())
+  id            String    @id @default(cuid())
+  playerId      String // Relación con el jugador
+  clubId        String // Relación con el club
+  typeOfPassId  String // Relación con el tipo de pase
+  active        Boolean // Indica si el jugador está activo en este club
+  startDate     DateTime // Fecha de inicio del pase
+  endDate       DateTime? // Fecha de fin del pase (opcional)
+  goals         Int       @default(0) // Goles hechos en este club
+  yellowCards   Int       @default(0) // Tarjetas amarillas en este club
+  redCards      Int       @default(0) // Tarjetas rojas en este club
+  matchesPlayed Int       @default(0) // Partidos jugados en este club
 
-  clubId          String
-  playerId        String
-  typeOfPassId    String
-  
-  active          Boolean
-  allgoals        Int?
-  allfaults       Int?
-  allcardsYellow  Int?
-  allcardsRed     Int?
+  player     Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  club       Club       @relation(fields: [clubId], references: [id])
+  typeOfPass TypeOfPass @relation(fields: [typeOfPassId], references: [id])
 
-  payInscription  Boolean
-
-  club            Club         @relation(fields: [clubId], references: [id])
-  player          Player       @relation(fields: [playerId], references: [id])
-  typeOfPass     TyperOfPass   @relation(fields: [typeOfPassId], references: [id])
-
-  @@unique([clubId, playerId, typeOfPassId])
+  @@unique([playerId, clubId, typeOfPassId]) // Aseguramos que un jugador no tenga registros duplicados con el mismo club y tipo de pase
 }
+
+// Ensure a player can only have one active club at a time
+
+model Format {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  tournaments Tournaments[] @relation("TournamentFormat") // Relación con el formato general de torneos
+  finals      Tournaments[] @relation("FinalFormat") // Relación con el formato de las finales
+}
+
 model Tournaments {
-  id        String   @id @default(cuid())
-  name      String?
-  dateStart DateTime
-  dateEnd   DateTime
-  formatId  String?
-  format    Format?  @relation(fields: [formatId], references: [id])
-  games     Game[]
+  id               String   @id @default(cuid())
+  name             String
+  description      String? // Descripción del torneo
+  dateStart        DateTime
+  dateEnd          DateTime
+  formatId         String // Relación con el formato del torneo
+  finalFormatId    String? // Relación opcional con el formato de la final
+  categoryId       String // Relación con la categoría del torneo
+  status           String   @default("pendiente") // Estado del torneo
+  fixtureGenerated Boolean  @default(false) // Indica si el fixture fue generado
+  games            Game[] // Relación con los partidos del torneo
+
+  format      Format     @relation("TournamentFormat", fields: [formatId], references: [id]) // Formato del torneo
+  finalFormat Format?    @relation("FinalFormat", fields: [finalFormatId], references: [id]) // Formato de la final (opcional)
+  category    Categories @relation(fields: [categoryId], references: [id]) // Categoría del torneo
 }
+
 model Game {
-  id                    String    @id @default(cuid())
-  firstTeam             String?
-  secondTeam            String?
-  firstDate             DateTime?
-  secondDate            DateTime?
-  cardsYellow           Int?
-  cardsRed              Int?
-  faults                Int?
-  amountGoalsFirstTeam  Int?
-  amountGoalsSecondTeam Int?
-  winner                String?
-  tournamentId          String?
-  tournament            Tournaments? @relation(fields: [tournamentId], references: [id])
+  id                    String   @id @default(cuid())
+  firstTeamId           String
+  secondTeamId          String
+  tournamentId          String
+  date                  DateTime
+  goalsFirstTeam        Int      @default(0)
+  goalsSecondTeam       Int      @default(0)
+  yellowCardsFirstTeam  Int      @default(0)
+  yellowCardsSecondTeam Int      @default(0)
+  redCardsFirstTeam     Int      @default(0)
+  redCardsSecondTeam    Int      @default(0)
+  foulsFirstTeam        Int      @default(0)
+  foulsSecondTeam       Int      @default(0)
+  winnerId              String? // Optional winner field
+
+  tournament Tournaments @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  firstTeam  Club  @relation("FirstTeam", fields: [firstTeamId], references: [id])
+  secondTeam Club  @relation("SecondTeam", fields: [secondTeamId], references: [id])
+  winner     Club? @relation("Winner", fields: [winnerId], references: [id]) // Relación opcional con el equipo ganador
+  events     GameEvent[]
+}
+model GameEvent{
+  id         String   @id @default(cuid())
+  gameId     String   // Relación con el partido
+  playerId   String   // Relación con el jugador
+  eventType  String   // Tipo de evento ("goal", "yellow_card", "red_card", "foul")
+  timestamp  DateTime @default(now()) // Momento en el que ocurrió el evento
+
+  game       Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
 }

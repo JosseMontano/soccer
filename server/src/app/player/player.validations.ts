@@ -1,15 +1,14 @@
-import { z } from 'zod';
-
-
+import { z } from "zod";
 
 export const playerSchema = z.object({
-  name: z.string().min(1, "El nombre es requerido").max(60, "El nombre no puede tener más de 60 caracteres"),
-  Ci: z.number().int().min(1, "El CI es requerido"),
-  lastName: z.string().min(1, "El apellido es requerido").max(60, "El apellido no puede tener más de 60 caracteres"),
-  nationality: z.string().min(1, "La nacionalidad es requerida").max(60, "La nacionalidad no puede tener más de 60 caracteres"),
-  age: z.number().int().min(1, "La edad es requerida"),
-  commet: z.number().int().min(1, "El codigo commet es requerido"),
-  birthdate: z.string().min(1, "La fecha de nacimiento es requerida"),
-  photo: z.string().min(1, "La foto es requerida"),
-
+  name: z.string().min(1, "El nombre del jugador es requerido").max(50, "El nombre no puede exceder 50 caracteres"),
+  lastName: z.string().min(1, "El apellido del jugador es requerido").max(50, "El apellido no puede exceder 50 caracteres"),
+  nationality: z.string().optional(),
+  birthdate: z.string().refine((date) => !isNaN(Date.parse(date)), "La fecha de nacimiento debe ser válida"),
+  gender: z.enum(["male", "female"], { 
+    required_error:"el genero es requerido",
+    invalid_type_error:"el genero debe ser male o female"}),
+  photo: z.string().optional(),
+  clubId: z.string().min(1, "El ID del club es requerido"),
+  commet: z.string().optional(),
 });

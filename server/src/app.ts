@@ -5,9 +5,12 @@ import { categoryRoutes } from './app/categories/categories.controller';
 import { config } from './common/config/config';
 import { clubRoutes } from './app/clubs/clubs.controller';
 import { clubCategoriesRoutes } from './app/clubsCategories/clubs.controller';
-import { passRouter } from './app/typeOfPass/typeOfPass.controller';
+import { typeOfPassRoutes } from './app/typeOfPass/typeOfPass.controller';
 import { playerRoutes } from './app/player/player.controller';
-import { historyPlayerRoutes } from './app/historyPlayer/historyPlayer';
+import { historyPlayerRoutes } from './app/historyPlayer/historyPlayer.controller';
+import { formatRoutes } from './app/format/format.controller';
+import { tournamentRoutes } from './app/tournaments/tournament.controller';
+import { gameRoutes } from './app/game/game.controller';
 
 const server = Fastify({ logger: true });
 
@@ -26,9 +29,13 @@ async function main() {
     categoryRoutes(server);
     clubRoutes(server);
     clubCategoriesRoutes(server);
-    passRouter(server);
+    typeOfPassRoutes(server);
     playerRoutes(server);
     historyPlayerRoutes(server);
+    formatRoutes(server);
+    tournamentRoutes(server);
+    gameRoutes(server);
+    //clubCategoriesRoutes(server);
 
     try {
         server.listen({ host: config.address, port: config.port }, (err) => { if (err) throw err })

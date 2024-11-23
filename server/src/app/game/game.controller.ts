@@ -1,151 +1,196 @@
 import { PrismaClient } from "@prisma/client";
 import { FastifyInstance } from "fastify";
-import { gameSchema } from "./game.validations"; // Import the validation schema
-import { ResponseType } from "../../common/interfaces/response";
 import { ZodError } from "zod";
-import { RequestParams } from "../../common/interfaces/request";
+import { ResponseType } from "../../common/interfaces/response";
 
 const prisma = new PrismaClient();
-export const endPointGames = "/games";
-
-export type GameDTO = {
-  firstTeam: string;
-  secondTeam: string;
-  firstDate: string;
-  secondDate?: string;
-  cardsYellow?: number;
-  cardsRed?: number;
-  faults?: number;
-  amountGoalsFirstTeam?: number;
-  amountGoalsSecondTeam?: number;
-  winner?: string;
-  tournamentId: string;
-};
+export const endPointGameEvents = "/games/events";
 
 export function gameRoutes(router: FastifyInstance) {
-  // Obtener todos los juegos
-  router.get(endPointGames, async (request, reply) => {
+  // Agregar un nuevo evento de jugador
+  router.post(`${endPointGameEvents}`, async (request, reply) => {
     try {
-      const games = await prisma.game.findMany();
-      const response: ResponseType = {
-        message: "Juegos obtenidos exitosamente",
-        data: games,
-        status: 200,
+      const { gameId, playerId, eventType } = request.body as {
+        gameId: string;
+        playerId: string;
+        eventType: "goal" | "yellow_card" | "red_card" | "foul";
       };
-      return reply.status(200).send(response);
-    } catch (error) {
-      if (error instanceof Error)
-        return reply
-          .status(500)
-          .send({ message: "Server error " + error.message });
-    }
-  });
 
-  // Crear un nuevo juego
-  router.post(endPointGames, async (request, reply) => {
-    try {
-      const data = request.body as GameDTO;
-      gameSchema.parse(data); // Validación usando Zod
-
-      const newGame = await prisma.game.create({
-        data: {
-          firstTeam: data.firstTeam,
-          secondTeam: data.secondTeam,
-          firstDate: new Date(data.firstDate),
-          secondDate: data.secondDate ? new Date(data.secondDate) : null,
-          cardsYellow: data.cardsYellow,
-          cardsRed: data.cardsRed,
-          faults: data.faults,
-          amountGoalsFirstTeam: data.amountGoalsFirstTeam,
-          amountGoalsSecondTeam: data.amountGoalsSecondTeam,
-          winner: data.winner,
-          tournamentId: data.tournamentId,
+      // Validar existencia del partido
+      const game = await prisma.game.findUnique({
+        where: { id: gameId },
+        include: {
+          firstTeam: true,
+          secondTeam: true,
         },
       });
 
+      if (!game) {
+        return reply.status(404).send({ message: "El partido no existe." });
+      }
+
+      // Validar existencia del jugador
+      const player = await prisma.player.findUnique({
+        where: { id: playerId },
+        include: {
+          historyPlayers: {
+            where: { active: true },
+          },
+        },
+      });
+
+      if (!player) {
+        return reply.status(404).send({ message: "El jugador no existe." });
+      }
+
+      const activeHistory = player.historyPlayers[0];
+      if (!activeHistory) {
+        return reply.status(400).send({
+          message: "El jugador no tiene un club activo registrado.",
+        });
+      }
+
+      // Validar que el jugador pertenece a uno de los equipos en el partido
+      if (
+        activeHistory.clubId !== game.firstTeamId &&
+        activeHistory.clubId !== game.secondTeamId
+      ) {
+        return reply.status(400).send({
+          message:
+            "El jugador no pertenece a ninguno de los equipos en este partido.",
+        });
+      }
+
+      // Crear el evento
+      const newEvent = await prisma.gameEvent.create({
+        data: {
+          gameId,
+          playerId,
+          eventType,
+        },
+      });
+
+      // Actualizar estadísticas del jugador en el HistoryPlayer
+      const updateStats = {
+        goal: { goals: { increment: 1 } },
+        yellow_card: { yellowCards: { increment: 1 } },
+        red_card: { redCards: { increment: 1 } },
+        foul: {}, // Las faltas no afectan al HistoryPlayer directamente
+      }[eventType];
+
+      if (Object.keys(updateStats).length > 0) {
+        await prisma.historyPlayer.update({
+          where: { id: activeHistory.id },
+          data: updateStats,
+        });
+      }
+
       const response: ResponseType = {
-        message: "Juego creado exitosamente",
-        data: newGame,
+        message:
+          "Evento de jugador registrado y estadísticas actualizadas exitosamente",
+        data: newEvent,
         status: 201,
       };
       return reply.status(201).send(response);
     } catch (error) {
       if (error instanceof ZodError) {
-        const errorMessages = error.errors.map((err) => ({
-          message: `"Validation.error: ${err.message}`,
-        }));
-        return reply.status(400).send({ errors: errorMessages });
+        return reply.status(400).send({
+          message: "Error de validación",
+          errors: error.errors,
+        });
       }
-      if (error instanceof Error)
-        return reply
-          .status(500)
-          .send({ message: "Server error " + error.message });
+      return reply.status(500).send({ message: `Server error: ${error} ` });
     }
   });
 
-  // Actualizar un juego por ID
-  router.put(endPointGames + "/:id", async (request, reply) => {
+  // Obtener eventos de un partido
+  router.get(`${endPointGameEvents}/:gameId`, async (request, reply) => {
     try {
-      const { id } = request.params as RequestParams;
-      const data = request.body as GameDTO;
-      gameSchema.parse(data); // Validación usando Zod
+      const { gameId } = request.params as { gameId: string };
 
-      const updatedGame = await prisma.game.update({
-        where: { id: id },
-        data: {
-          firstTeam: data.firstTeam,
-          secondTeam: data.secondTeam,
-          firstDate: new Date(data.firstDate),
-          secondDate: data.secondDate ? new Date(data.secondDate) : null,
-          cardsYellow: data.cardsYellow,
-          cardsRed: data.cardsRed,
-          faults: data.faults,
-          amountGoalsFirstTeam: data.amountGoalsFirstTeam,
-          amountGoalsSecondTeam: data.amountGoalsSecondTeam,
-          winner: data.winner,
-          tournamentId: data.tournamentId,
+      const events = await prisma.gameEvent.findMany({
+        where: { gameId },
+        include: {
+          player: true, // Incluye información del jugador
         },
       });
 
+      if (!events.length) {
+        return reply.status(404).send({
+          message: "No se encontraron eventos para este partido.",
+        });
+      }
+
       const response: ResponseType = {
-        message: "Juego actualizado exitosamente",
-        data: updatedGame,
+        message: "Eventos del partido obtenidos exitosamente",
+        data: events,
         status: 200,
       };
       return reply.status(200).send(response);
     } catch (error) {
-      if (error instanceof ZodError) {
-        const errorMessages = error.errors.map((err) => ({
-          message: `Validation error: ${err.message}`,
-        }));
-        return reply.status(400).send({ errors: errorMessages });
-      }
-      if (error instanceof Error)
-        return reply
-          .status(500)
-          .send({ message: "Server error " + error.message });
+      return reply.status(500).send({ message: `Server error: ${error}` });
     }
   });
 
-  // Eliminar un juego por ID
-  router.delete(endPointGames + "/:id", async (request, reply) => {
+  // Obtener todos los partidos de un torneo
+  router.get("/games/tournament/:tournamentId", async (request, reply) => {
     try {
-      const { id } = request.params as RequestParams;
-      const deleteData = await prisma.game.delete({
-        where: { id: id },
+      const { tournamentId } = request.params as { tournamentId: string };
+
+      const games = await prisma.game.findMany({
+        where: { tournamentId },
+        orderBy: { date: "asc" },
+        include: {
+          firstTeam: true,
+          secondTeam: true,
+        },
       });
 
+      if (games.length === 0) {
+        return reply.status(404).send({
+          message: "No hay partidos para este torneo.",
+        });
+      }
+
       const response: ResponseType = {
-        message: "Juego eliminado exitosamente",
-        data: deleteData,
+        message: "Partidos del torneo obtenidos exitosamente",
+        data: games,
         status: 200,
       };
       return reply.status(200).send(response);
     } catch (error) {
-      if (error instanceof Error)
-        return reply
-          .status(500)
-          .send({ message: "Server error " + error.message });
+      return reply.status(500).send({ message: `Server error: ${error}` });
+    }
+  });
+
+  // Obtener un partido específico
+  router.get("/games/:id", async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+
+      const game = await prisma.game.findUnique({
+        where: { id },
+        include: {
+          firstTeam: true,
+          secondTeam: true,
+          tournament: true,
+        },
+      });
+
+      if (!game) {
+        return reply.status(404).send({
+          message: "El partido no existe.",
+        });
+      }
+
+      const response: ResponseType = {
+        message: "Partido obtenido exitosamente",
+        data: game,
+        status: 200,
+      };
+      return reply.status(200).send(response);
+    } catch (error) {
+      return reply.status(500).send({ message: `Server error: ${error}` });
     }
   });
 }

@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { FastifyInstance } from "fastify";
-import { clubSchema } from "./clubs.validations"; // Import the validation schema
+import { clubSchema } from "./clubs.validations";
 import { ResponseType } from "../../common/interfaces/response";
 import { ZodError } from "zod";
 import { RequestParams } from "../../common/interfaces/request";
@@ -10,6 +10,8 @@ export const endPointClubs = "/clubs";
 
 export type ClubDTO = {
   name: string;
+  logo?: string;
+  categoryId: string;
 };
 
 export function clubRoutes(router: FastifyInstance) {
@@ -18,7 +20,7 @@ export function clubRoutes(router: FastifyInstance) {
     try {
       const clubs = await prisma.club.findMany();
       const response: ResponseType = {
-        message: "Clubs obtenidos existosamente",
+        message: "Clubs obtenidos exitosamente",
         data: clubs,
         status: 200,
       };
@@ -35,19 +37,29 @@ export function clubRoutes(router: FastifyInstance) {
   router.post(endPointClubs, async (request, reply) => {
     try {
       const data = request.body as ClubDTO;
-      clubSchema.parse(data); // Validate using Zod
+      clubSchema.parse(data);
 
       const newClub = await prisma.club.create({
         data: {
           name: data.name,
+          logo: data.logo,
+        },
+      });
+      const clubCategory = await prisma.clubCategories.create({
+        data: {
+          clubId: newClub.id,
+          categoryId: data.categoryId,
         },
       });
 
       const response: ResponseType = {
-        message: `Club creado exitosamente`,
-        data: newClub,
-        status: 201,
-      };
+        message: "Club creado exitosamente",
+        data: {
+        club: newClub,
+        clubCategory,        
+      },
+      status: 201,
+    };
       return reply.status(201).send(response);
     } catch (error) {
       if (error instanceof ZodError) {
@@ -67,17 +79,19 @@ export function clubRoutes(router: FastifyInstance) {
   router.put(endPointClubs + "/:id", async (request, reply) => {
     try {
       const { id } = request.params as RequestParams;
-
       const data = request.body as ClubDTO;
       clubSchema.parse(data);
 
       const updatedClub = await prisma.club.update({
         where: { id: id },
-        data: { name: data.name },
+        data: {
+          name: data.name,
+          logo: data.logo,
+        },
       });
 
       const response: ResponseType = {
-        message: `Club actualizado exitosamente`,
+        message: "Club actualizado exitosamente",
         data: updatedClub,
         status: 200,
       };
@@ -105,7 +119,7 @@ export function clubRoutes(router: FastifyInstance) {
       });
 
       const response: ResponseType = {
-        message: "Se elimino el club exitosamente",
+        message: "Club eliminado exitosamente",
         data: deletedClub,
         status: 200,
       };
