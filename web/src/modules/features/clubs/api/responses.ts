@@ -1,4 +1,5 @@
-export interface Club{
-    id: string
-    name: string
-}
+export interface Club {
+    id: string;
+    name: string;
+    logo?: string;
+  }

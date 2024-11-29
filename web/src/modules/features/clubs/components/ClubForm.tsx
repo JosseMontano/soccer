@@ -13,7 +13,8 @@ interface Props {
 }
 
 const ClubForm = ({ closeModal, setData, club }: Props) => {
-  const { postData } = useFetch();
+  const { postData, fetchData } = useFetch();
+  const { data: categories } = fetchData("GET /categories");
   const postMutation = postData("POST /clubs");
   const putMutation = postData("PUT /clubs/:id");
   const {
@@ -23,12 +24,13 @@ const ClubForm = ({ closeModal, setData, club }: Props) => {
   } = useForm<ClubDTO>({
     defaultValues: {
       name: club?.name,
+      logo: "",
     },
     resolver: yupResolver(ClubDTOschema),
   });
-  /* en express enviar la foto = investigar*/
 
   const onSubmit = (form: ClubDTO) => {
+    console.log(form)
     if (club === null) {
       postMutation(
         {
@@ -60,19 +62,26 @@ const ClubForm = ({ closeModal, setData, club }: Props) => {
       );
     }
   };
-  /* onSuccess me da una data*/
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
       <input
         type="text"
-        placeholder="Ingrese el nombre del jugador"
+        placeholder="Ingrese el nombre del club"
         {...register("name")}
-      />
+      />  
       <p>{errors.name?.message}</p>
-     
-      <button type="submit">
-        {club ? "Editar Club" : "Registrar Club"}
-      </button>
+      <select {...register("categoryId")}>
+        <option value="">Seleccione una categoria</option>
+        {
+          categories?.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))
+        }
+      </select>
+      <button type="submit">{club ? "Editar Club" : "Registrar Club"}</button>
     </form>
   );
 };

@@ -1,4 +1,4 @@
-import {   ClubDTO } from "./dtos";
+import { ClubDTO } from "./dtos";
 import { Club } from "./responses";
 
 declare global {
@@ -22,6 +22,6 @@ declare global {
       params: { id: string };
       request: null;
       response: Club;
-    };
-  }
+    };
+  }
 }
