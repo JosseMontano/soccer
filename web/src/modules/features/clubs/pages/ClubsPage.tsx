@@ -4,10 +4,10 @@ import { useState } from "react";
 import ClubForm from "../components/ClubForm";
 import { toastConfirm, toastSuccess } from "@/modules/core/utils/toast";
 import { Club } from "../api/responses";
+import { Button } from "@/components/ui/button";
 
 const ClubsPage = () => {
   const { fetchData, postData } = useFetch();
-  const [open, setOpen] = useState(false);
   const { data, setData } = fetchData("GET /clubs");
   const deleteMutation = postData("DELETE /clubs/:id");
   const [clubSelected, setClubSelected] = useState<Club | null>(null);
@@ -28,36 +28,39 @@ const ClubsPage = () => {
     <>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-lg font-bold">Lista de Clubs</h1>
-        <button
-          onClick={() => {
-            setOpen(true);
-            setClubSelected(null);
-          }}
-        >
-          Añadir Club
-        </button>
       </div>
 
-      {open && (
-        <Modal closeModal={() => setOpen(false)} title="Registro de Clubes">
-          <ClubForm
-            closeModal={() => setOpen(false)}
-            setData={setData}
-            club={clubSelected}
-          />
-        </Modal>
-      )}
+      <Modal
+        title="Registro de Clubes"
+        button={
+          <Button
+            onClick={() => {
+              setClubSelected(null);
+            }}
+          >
+            Añadir Club
+          </Button>
+        }
+        description="Añadir Club"
+      >
+        <ClubForm
+          closeModal={() => ({})}
+          setData={setData}
+          club={clubSelected}
+        />
+      </Modal>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {data?.map((club) => (
           <div key={club.id} className="p-4 border rounded">
             <p>{club.name}</p>
-            {club.logo && <img src={club.logo} alt={club.name} className="w-20 h-20" />}
+            {club.logo && (
+              <img src={club.logo} alt={club.name} className="w-20 h-20" />
+            )}
             <div className="flex gap-2 mt-2">
               <button onClick={() => handleDelete(club.id)}>Eliminar</button>
               <button
                 onClick={() => {
-                  setOpen(true);
                   setClubSelected(club);
                 }}
               >
@@ -71,4 +74,4 @@ const ClubsPage = () => {
   );
 };
 
-export default ClubsPage;
+export default ClubsPage;

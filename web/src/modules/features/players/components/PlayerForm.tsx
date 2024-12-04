@@ -13,7 +13,7 @@ interface Props {
 }
 
 const PlayerForm = ({ closeModal, setData, player }: Props) => {
-  const { postData } = useFetch();
+  const { postData, fetchData } = useFetch();
   const postMutation = postData("POST /players");
   const putMutation = postData("PUT /players/:id");
   const {
@@ -24,20 +24,22 @@ const PlayerForm = ({ closeModal, setData, player }: Props) => {
     defaultValues: {
       name: player?.name,
       lastName: player?.lastName,
-      Ci: player?.Ci,
       birthdate: player?.birthdate.split("T")[0],
-      age: player?.age,
       nationality: player?.nationality,
       commet: player?.commet,
+      gender: player?.gender,
+      clubId: player?.clubId,
       photo:
         "https://th.bing.com/th/id/OIP.peA5ILCfebCRr2LRch1BoAHaFj?rs=1&pid=ImgDetMain",
     },
     resolver: yupResolver(PlayerDTOschema),
   });
   /* en express enviar la foto = investigar*/
-
+  const { data:clubs } = fetchData("GET /clubs");
+  console.log(clubs)
   const onSubmit = (form: PlayerDTO) => {
     if (player === null) {
+      console.log(form);
       postMutation(
         {
           ...form,
@@ -86,23 +88,11 @@ const PlayerForm = ({ closeModal, setData, player }: Props) => {
       />
       <p>{errors.lastName?.message}</p>
       <input
-        type="number"
-        placeholder="Ingrese el carnet del jugador"
-        {...register("Ci")}
-      />
-      <p>{errors.Ci?.message}</p>
-      <input
         type="date"
         placeholder="ingrese la fecha de nacimiento del jugador"
         {...register("birthdate")}
       />
       <p>{errors.birthdate?.message}</p>
-      <input
-        type="number"
-        placeholder="Ingrese la edad del jugador"
-        {...register("age")}
-      />
-      <p>{errors.age?.message}</p>
       <input
         type="text"
         placeholder="Ingrese la nacionalidad del jugador"
@@ -110,11 +100,30 @@ const PlayerForm = ({ closeModal, setData, player }: Props) => {
       />
       <p>{errors.nationality?.message}</p>
       <input
-        type="number"
+        type="text"
         placeholder="Ingrese el commet del jugador"
         {...register("commet")}
       />
       <p>{errors.commet?.message}</p>
+      <select {...register("gender")}>
+        <option value="">Seleccione genero</option>
+        <option value="male">Hombre</option>
+        <option value="female">Mujer</option>
+      </select>
+      <p>{errors.gender?.message}</p>
+
+      <select {...register("clubId")}>
+        <option value="">Seleccione el club</option>
+        {
+          clubs?.map((c) => (
+            <option key={c.clubId} value={c.clubId}>
+              {c.value}
+            </option>
+          ))
+        }
+      </select>
+      <p>{errors.gender?.message}</p>
+
       <button type="submit">
         {player ? "Editar Jugador" : "Registrar Jugador"}
       </button>

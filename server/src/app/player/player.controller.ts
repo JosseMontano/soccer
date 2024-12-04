@@ -41,9 +41,15 @@ export function playerRoutes(router: FastifyInstance) {
           club: true,
         },
       });
+      const fullData=players.map((v)=>{
+        return{
+          age: calculateAge(v.birthdate.toString()),
+          ...v
+        }
+      })
       const response: ResponseType = {
         message: "Jugadores obtenidos exitosamente",
-        data: players,
+        data: fullData,
         status: 200,
       };
       return reply.status(200).send(response);
@@ -60,6 +66,7 @@ export function playerRoutes(router: FastifyInstance) {
     try {
       const data = request.body as PlayerDTO;
       playerSchema.parse(data);
+      console.log(data);
 
       // Calculate the player's age
       const age = calculateAge(data.birthdate);

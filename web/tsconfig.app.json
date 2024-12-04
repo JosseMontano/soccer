@@ -19,13 +19,11 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-        /* Aliases */
-        "baseUrl": ".",
-        "paths": {
-          "@assets/*": ["./src/assets/*"],
-          "@/*": ["./src/*", "./dist/*", ""]
-        }
+    /* Aliases */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src"]
-  
 }

@@ -5,6 +5,7 @@ import { ResponseType } from "../../common/interfaces/response";
 import { ZodError } from "zod";
 import { RequestParams } from "../../common/interfaces/request";
 
+
 const prisma = new PrismaClient();
 export const endPointClubs = "/clubs";
 
@@ -18,12 +19,33 @@ export function clubRoutes(router: FastifyInstance) {
   // Get all clubs
   router.get(endPointClubs, async (request, reply) => {
     try {
-      const clubs = await prisma.club.findMany();
-      const response: ResponseType = {
+      const clubs = await prisma.club.findMany({
+        include: {
+          clubCategories: {
+            include: {
+              category: true,
+            },
+          },
+        },
+      });
+
+      // Transformar los datos al formato deseado
+      const transformedData = clubs.flatMap((club) =>
+        club.clubCategories.map((clubCategory) => {
+          const { name: categoryName, minAge, maxAge } = clubCategory.category;
+          return {
+            clubId: club.id,
+            value: `${club.name} | ${categoryName} | ${minAge} a ${maxAge} años`,
+          };
+        })
+      );
+
+      const response = {
         message: "Clubs obtenidos exitosamente",
-        data: clubs,
+        data: transformedData,
         status: 200,
       };
+
       return reply.status(200).send(response);
     } catch (error) {
       if (error instanceof Error)
@@ -55,11 +77,11 @@ export function clubRoutes(router: FastifyInstance) {
       const response: ResponseType = {
         message: "Club creado exitosamente",
         data: {
-        club: newClub,
-        clubCategory,        
-      },
-      status: 201,
-    };
+          club: newClub,
+          clubCategory,
+        },
+        status: 201,
+      };
       return reply.status(201).send(response);
     } catch (error) {
       if (error instanceof ZodError) {

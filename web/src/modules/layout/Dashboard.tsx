@@ -19,6 +19,11 @@ const DATA = [
     name: "Clubs",
     icon: Icon.Types.SHIELD,
   },
+  {
+    to: "/torneos",
+    name: "Torneos",
+    icon: Icon.Types.SHIELD,
+  },
 ];
 
 const Dashboard = () => {
@@ -43,8 +48,8 @@ const Dashboard = () => {
                 clsx(
                   "p-2 h-max border rounded-xl transition-colors duration-300 flex items-center gap-2 text-sm",
                   {
-                    "bg-primary-500 border-primary-500 text-white": isActive,
-                    "bg-white border-primary-200 text-primary-400": !isActive,
+                    "bg-skyblue-500 border-skyblue-500 text-white": isActive,
+                    "bg-white border-skyblue-200 text-skyblue-400": !isActive,
                   }
                 )
               }
@@ -57,12 +62,12 @@ const Dashboard = () => {
           ))}
         </div>
         <div className="flex flex-col gap-6">
-          <button className="p-2 w-10 aspect-square text-primary-400">
+          <button className="p-2 w-10 aspect-square text-skyblue-400">
             <Icon type={Icon.Types.SETTINGS} />
           </button>
         </div>
       </aside>
-      <div className="h-full overflow-auto flex-1 bg-gray-950 text-white">
+      <div className="h-full overflow-auto flex-1 bg-gray-950 text-white flex flex-col">
         <Outlet />
       </div>
     </div>

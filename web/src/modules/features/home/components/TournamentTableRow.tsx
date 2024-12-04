@@ -17,7 +17,7 @@ const TournamentTableRow = ({ open, title }: Props) => {
         className="flex justify-between items-center px-10 py-4 border-b border-b-gray-700"
       >
         <div className="flex items-center gap-4">
-          <span className="w-10 p-2 aspect-square bg-white rounded-xl flex items-center justify-center text-primary-500">
+          <span className="w-10 p-2 aspect-square bg-white rounded-xl flex items-center justify-center text-skyblue-500">
             <Icon type={Icon.Types.TROPHY} />
           </span>
           <div className="flex flex-col items-start">

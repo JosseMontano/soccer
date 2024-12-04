@@ -3,7 +3,7 @@ import Fuchi from "@assets/fuchibol.png";
 
 const Banner = () => {
   return (
-    <div className="bg-primary-500 rounded-2xl h-80 flex justify-center flex-col relative overflow-hidden isolate">
+    <div className="bg-skyblue-500 rounded-2xl h-80 flex justify-center flex-col relative overflow-hidden isolate">
       <header className="flex gap-4 items-center px-10 py-4 z-10">
         <div className="bg-gray-950 px-2 py-2 w-12 aspect-square rounded-xl">
           <img
