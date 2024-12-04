@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import Modal from "@/modules/core/components/ui/Modal";
+import useUserStore, { User } from "@/modules/core/store/userStore";
+import { AdminPermissos } from "@/modules/core/constants/ROLES";
 
 const PlayersPage = () => {
   const { fetchData, postData } = useFetch();
   /* Es un estado, son las variaciones de la interfaz */
   const { data, setData } = fetchData("GET /players");
-  console.log(data)
+  const { user } = useUserStore();
   const deleteMutation = postData("DELETE /players/:id");
   const [playerSelected, setPlayerSelected] = useState<Player | null>(null);
 
@@ -112,15 +114,21 @@ const PlayersPage = () => {
       <Modal
         title="Registro de jugadores"
         description="Ingrese todos los datos del jugador"
-        button={
-          <Button
-            onClick={() => {
-              setPlayerSelected(null);
-            }}
-          >
-            Añadir jugador
-          </Button>
-        }
+        button={(() => {
+          const permissos = AdminPermissos(user);
+          if (permissos) {
+            return (
+              <Button
+                onClick={() => {
+                  setPlayerSelected(null);
+                }}
+              >
+                Añadir jugador
+              </Button>
+            );
+          }
+          return null;
+        })()}
       >
         <PlayerForm
           closeModal={() => {}}

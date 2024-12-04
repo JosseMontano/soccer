@@ -5,6 +5,8 @@ import ClubForm from "../components/ClubForm";
 import { toastConfirm, toastSuccess } from "@/modules/core/utils/toast";
 import { Club } from "../api/responses";
 import { Button } from "@/components/ui/button";
+import { AdminPermissos } from "@/modules/core/constants/ROLES";
+import useUserStore, { User } from "@/modules/core/store/userStore";
 
 const ClubsPage = () => {
   const { fetchData, postData } = useFetch();
@@ -23,7 +25,7 @@ const ClubsPage = () => {
       });
     });
   };
-
+  const {user} = useUserStore()
   return (
     <>
       <div className="flex justify-between items-center mb-4">
@@ -33,13 +35,21 @@ const ClubsPage = () => {
       <Modal
         title="Registro de Clubes"
         button={
-          <Button
-            onClick={() => {
-              setClubSelected(null);
-            }}
-          >
-            Añadir Club
-          </Button>
+          (() => {
+            const permissos = AdminPermissos(user);
+            if (permissos) {
+              return (
+                <Button
+                  onClick={() => {
+                    setClubSelected(null);
+                  }}
+                >
+                    Añadir Club
+                </Button>
+              );
+            }
+            return null;
+          })()
         }
         description="Añadir Club"
       >

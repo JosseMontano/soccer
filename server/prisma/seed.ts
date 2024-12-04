@@ -18,6 +18,7 @@ async function seedTypeOfPass() {
   console.log("Semilla de TypeOfPass creada exitosamente.");
 }
 
+
 // Llama a la función dentro del main
 async function main() {
   // Semilla para formatos

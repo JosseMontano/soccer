@@ -11,6 +11,7 @@ import { historyPlayerRoutes } from './app/historyPlayer/historyPlayer.controlle
 import { formatRoutes } from './app/format/format.controller';
 import { tournamentRoutes } from './app/tournaments/tournament.controller';
 import { gameRoutes } from './app/game/game.controller';
+import { usersRoutes } from './app/users/users.controller';
 
 const server = Fastify({ logger: true });
 
@@ -25,7 +26,7 @@ async function main() {
     server.get('/', async (request, reply) => {
         return reply.send({ service: 'welcome to soccer world' });
     });
-
+    usersRoutes(server)
     categoryRoutes(server);
     clubRoutes(server);
     clubCategoriesRoutes(server);

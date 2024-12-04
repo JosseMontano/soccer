@@ -1,7 +1,7 @@
 /*jsx es como un html que puedes poner javascript dentro*/
 import { Toaster } from "sonner";
 import PlayersPage from "./modules/features/players/pages/PlayersPage";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import ClubsPage from "./modules/features/clubs/pages/ClubsPage";
 import {
   QueryCache,
@@ -13,6 +13,9 @@ import GamePage from "./modules/features/game/pages/GamePage";
 import HomePage from "./modules/features/home/pages/HomePage";
 import Dashboard from "./modules/layout/Dashboard";
 import { ThemeProvider } from "./components/theme-provider";
+import useUserStore, { User } from "./modules/core/store/userStore";
+import { AdminPermissos } from "./modules/core/constants/ROLES";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
@@ -22,8 +25,20 @@ const queryClient = new QueryClient({
     },
   }),
 });
-/*un componente de react es una funcion de javascrip y puede ser oh flecha o function*/
+
+function NotFoundPage() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    navigate("/");
+  }, [navigate]);
+
+  return <p>Redirecting to the home page...</p>;
+}
+
 function App() {
+  const { user } = useUserStore();
+
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <QueryClientProvider client={queryClient}>
@@ -31,11 +46,16 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard />}>
               <Route path="/" element={<PlayersPage />} />
-              <Route path="/clubs" element={<ClubsPage />} />
               <Route path="/home" element={<HomePage />} />
-              <Route path="/games" element={<GamePage />} />
+              {AdminPermissos(user) && (
+                <>
+                  <Route path="/clubs" element={<ClubsPage />} />
+
+                  <Route path="/games" element={<GamePage />} />
+                </>
+              )}
             </Route>
-            {/* <Route path="*" element={<NotFound />} /> */}
+             <Route path="*" element={<NotFoundPage />} /> 
           </Routes>
         </Router>
         <Toaster position="top-right" />
