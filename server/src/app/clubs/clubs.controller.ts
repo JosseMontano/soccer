@@ -28,6 +28,33 @@ export function clubRoutes(router: FastifyInstance) {
           },
         },
       });
+      const response = {
+        message: "Clubs obtenidos exitosamente",
+        data: clubs,
+        status: 200,
+      };
+
+      return reply.status(200).send(response);
+    } catch (error) {
+      if (error instanceof Error)
+        return reply
+          .status(500)
+          .send({ message: "Server error " + error.message });
+    }
+  });
+  
+  
+  router.get(endPointClubs + "/select", async (request, reply) => {
+    try {
+      const clubs = await prisma.club.findMany({
+        include: {
+          clubCategories: {
+            include: {
+              category: true,
+            },
+          },
+        },
+      });
 
       // Transformar los datos al formato deseado
       const transformedData = clubs.flatMap((club) =>

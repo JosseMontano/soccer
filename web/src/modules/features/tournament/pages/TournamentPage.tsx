@@ -9,8 +9,8 @@ const TournamentPage = () => {
   const { fetchData, postData } = useFetch();
   const [open, setOpen] = useState(false);
   /* Es un estado, son las variaciones de la interfaz */
-  const { data, setData } = fetchData("GET /tournament");
-  const deleteMutation = postData("DELETE /tournament/:id");
+  const { data, setData } = fetchData("GET /tournaments");
+  const deleteMutation = postData("DELETE /tournaments/:id");
   const [tournamentSelected, setTournamentSelected] =
     useState<Tournament | null>(null);
   const handleDelete = (id: string) => {

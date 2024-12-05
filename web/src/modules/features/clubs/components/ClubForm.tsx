@@ -10,6 +10,7 @@ interface Props {
   club: Club | null;
   closeModal: () => void;
   setData: SetData<Club[]>;
+
 }
 
 const ClubForm = ({ closeModal, setData, club }: Props) => {

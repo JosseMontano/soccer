@@ -123,6 +123,9 @@ export function playerRoutes(router: FastifyInstance) {
           clubId: data.clubId,
           commet: data.commet,
         },
+        include: {
+          club: true,
+        },
       });
 
       // Automatically create HistoryPlayer record

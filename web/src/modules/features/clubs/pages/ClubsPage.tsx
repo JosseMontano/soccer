@@ -1,12 +1,12 @@
-import Modal from "@/modules/core/components/ui/Modal";
-import useFetch from "@/modules/core/hooks/useFetch";
-import { useState } from "react";
-import ClubForm from "../components/ClubForm";
-import { toastConfirm, toastSuccess } from "@/modules/core/utils/toast";
-import { Club } from "../api/responses";
 import { Button } from "@/components/ui/button";
+import Modal from "@/modules/core/components/ui/Modal";
 import { AdminPermissos } from "@/modules/core/constants/ROLES";
-import useUserStore, { User } from "@/modules/core/store/userStore";
+import useFetch from "@/modules/core/hooks/useFetch";
+import useUserStore from "@/modules/core/store/userStore";
+import { toastConfirm, toastSuccess } from "@/modules/core/utils/toast";
+import { useState } from "react";
+import { Club } from "../api/responses";
+import ClubForm from "../components/ClubForm";
 
 const ClubsPage = () => {
   const { fetchData, postData } = useFetch();
@@ -25,6 +25,7 @@ const ClubsPage = () => {
       });
     });
   };
+  
   const {user} = useUserStore()
   return (
     <>

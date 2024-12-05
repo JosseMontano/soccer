@@ -1,11 +1,10 @@
-import { LoginDTO } from "../api/dtos";
-import useFetch, { SetData } from "@/modules/core/hooks/useFetch";
-import { toastSuccess } from "@/modules/core/utils/toast";
-import { Login } from "../api/responses";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { LoginDTOschema } from "../validations/LoginDTO.schema";
+import useFetch from "@/modules/core/hooks/useFetch";
 import useUserStore from "@/modules/core/store/userStore";
+import { toastSuccess } from "@/modules/core/utils/toast";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
+import { LoginDTO } from "../api/dtos";
+import { LoginDTOschema } from "../validations/LoginDTO.schema";
 
 interface Props {}
 
@@ -42,20 +41,20 @@ const LoginForm = ({}: Props) => {
 <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
       <input
         type="text"
-        placeholder="Ingrese el nombre del jugador"
+        placeholder="Ingrese el email"
         {...register("email")}
       />
       <p>{errors.email?.message}</p>
       <input
         type="text"
-        placeholder="Ingrese el apellido del jugador"
+        placeholder="Ingrese la contraseña"
         {...register("password")}
       />
       <p>{errors.password?.message}</p>
 
       <button type="submit">{"Iniciar sesion"}</button>
     </form>
-    <button onClick={logout}>chao</button>
+    <button onClick={logout}>cerrar sesion</button>
 </>
   );
 };

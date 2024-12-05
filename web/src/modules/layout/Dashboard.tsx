@@ -24,7 +24,7 @@ const DATA = [
     role: ["1", "2"],
   },
   {
-    to: "/torneos",
+    to: "/tournament",
     name: "Torneos",
     icon: Icon.Types.SHIELD,
     role: ["1", "2"],

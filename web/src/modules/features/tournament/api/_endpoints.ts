@@ -3,22 +3,22 @@ import { Tournament } from "./responses";
 
 declare global {
   interface EndpointMap {
-    "GET /tournament": {
+    "GET /tournaments": {
       params: never;
       request: never;
       response: Tournament[];
     };
-    "POST /tournament": {
+    "POST /tournaments": {
       params: never;
       request: TournamentDTO;
       response: Tournament;
     };
-    "PUT /tournament/:id": {
+    "PUT /tournaments/:id": {
       params: { id: string };
       request: TournamentDTO;
       response: Tournament;
     };
-    "DELETE /tournament/:id": {
+    "DELETE /tournaments/:id": {
       params: { id: string };
       request: null;
       response: Tournament;

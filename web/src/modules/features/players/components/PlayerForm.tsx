@@ -35,8 +35,8 @@ const PlayerForm = ({ closeModal, setData, player }: Props) => {
     resolver: yupResolver(PlayerDTOschema),
   });
   /* en express enviar la foto = investigar*/
-  const { data:clubs } = fetchData("GET /clubs");
-  console.log(clubs)
+  const { data: clubs } = fetchData("GET /clubs/select");
+  console.log(clubs);
   const onSubmit = (form: PlayerDTO) => {
     if (player === null) {
       console.log(form);
@@ -73,6 +73,7 @@ const PlayerForm = ({ closeModal, setData, player }: Props) => {
     }
   };
   /* onSuccess me da una data*/
+  console.log(clubs);
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
       <input
@@ -114,13 +115,11 @@ const PlayerForm = ({ closeModal, setData, player }: Props) => {
 
       <select {...register("clubId")}>
         <option value="">Seleccione el club</option>
-        {
-          clubs?.map((c) => (
-            <option key={c.clubId} value={c.clubId}>
-              {c.value}
-            </option>
-          ))
-        }
+        {clubs?.map((c) => (
+          <option key={c.clubId} value={c.clubId}>
+            {c.value}
+          </option>
+        ))}
       </select>
       <p>{errors.gender?.message}</p>
 

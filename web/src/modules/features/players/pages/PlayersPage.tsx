@@ -1,14 +1,14 @@
-import useFetch from "@/modules/core/hooks/useFetch";
-import { useState } from "react";
-import PlayerForm from "../components/PlayerForm";
-import { toastConfirm, toastSuccess } from "@/modules/core/utils/toast";
-import { Player } from "../api/responses";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
-import { ColumnDef } from "@tanstack/react-table";
 import Modal from "@/modules/core/components/ui/Modal";
-import useUserStore, { User } from "@/modules/core/store/userStore";
 import { AdminPermissos } from "@/modules/core/constants/ROLES";
+import useFetch from "@/modules/core/hooks/useFetch";
+import useUserStore from "@/modules/core/store/userStore";
+import { toastConfirm, toastSuccess } from "@/modules/core/utils/toast";
+import { ColumnDef } from "@tanstack/react-table";
+import { useState } from "react";
+import { Player } from "../api/responses";
+import PlayerForm from "../components/PlayerForm";
 
 const PlayersPage = () => {
   const { fetchData, postData } = useFetch();
@@ -51,7 +51,7 @@ const PlayersPage = () => {
       header: "Apellido",
     },
     {
-      accessorKey: "birthdate",
+      accessorFn: (row) => (row.birthdate.split("T")[0]),
       header: "Fecha de nacimiento",
     },
     {

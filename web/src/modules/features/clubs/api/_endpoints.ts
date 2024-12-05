@@ -1,5 +1,5 @@
 import { ClubDTO } from "./dtos";
-import { Club } from "./responses";
+import { Club, Clubget } from "./responses";
 
 declare global {
   interface EndpointMap {
@@ -7,6 +7,11 @@ declare global {
       params: never;
       request: never;
       response: Club[];
+    };
+    "GET /clubs/select": {
+      params: never;
+      request: never;
+      response: Clubget[];
     };
     "POST /clubs": {
       params: never;
@@ -22,6 +27,6 @@ declare global {
       params: { id: string };
       request: null;
       response: Club;
-    };
-  }
+    };
+  }
 }

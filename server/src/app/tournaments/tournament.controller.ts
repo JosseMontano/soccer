@@ -36,7 +36,6 @@ export function tournamentRoutes(router: FastifyInstance) {
     }
   });
 
-  // Crear un nuevo torneo
   router.post(endPointTournaments, async (request, reply) => {
     try {
       const data = createTournamentSchema.parse(request.body);
@@ -168,14 +167,12 @@ export function tournamentRoutes(router: FastifyInstance) {
     }
   });
 
-  // Generar fixture aleatorio (Refinado)
   router.post(
     `${endPointTournaments}/:id/generate-fixture`,
     async (request, reply) => {
       try {
         const { id } = request.params as { id: string };
 
-        // Obtener el torneo junto con sus equipos y categoría
         const tournament = await prisma.tournaments.findUnique({
           where: { id },
           include: {
@@ -193,7 +190,6 @@ export function tournamentRoutes(router: FastifyInstance) {
           return reply.status(404).send({ message: "Torneo no encontrado." });
         }
 
-        // Validar que haya equipos disponibles
         const teams = tournament.category.clubCategories.map(
           (clubCategory) => clubCategory.club
         );
@@ -204,7 +200,6 @@ export function tournamentRoutes(router: FastifyInstance) {
           });
         }
 
-        // Validar número par de equipos
         if (teams.length % 2 !== 0) {
           return reply.status(400).send({
             message:

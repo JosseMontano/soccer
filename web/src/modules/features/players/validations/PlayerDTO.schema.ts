@@ -1,4 +1,3 @@
-import { Club } from "lucide-react";
 import * as yup from "yup";
 export const PlayerDTOschema= yup.object({
   name: yup.string().required("el nombre es requerido"),
