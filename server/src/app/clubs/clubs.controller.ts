@@ -124,7 +124,7 @@ export function clubRoutes(router: FastifyInstance) {
     }
   });
 
-  // Update a club by ID
+
   router.put(endPointClubs + "/:id", async (request, reply) => {
     try {
       const { id } = request.params as RequestParams;

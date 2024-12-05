@@ -25,8 +25,8 @@ const ClubsPage = () => {
       });
     });
   };
-  
-  const {user} = useUserStore()
+
+  const { user } = useUserStore();
   return (
     <>
       <div className="flex justify-between items-center mb-4">
@@ -35,23 +35,21 @@ const ClubsPage = () => {
 
       <Modal
         title="Registro de Clubes"
-        button={
-          (() => {
-            const permissos = AdminPermissos(user);
-            if (permissos) {
-              return (
-                <Button
-                  onClick={() => {
-                    setClubSelected(null);
-                  }}
-                >
-                    Añadir Club
-                </Button>
-              );
-            }
-            return null;
-          })()
-        }
+        button={(() => {
+          const permissos = AdminPermissos(user);
+          if (permissos) {
+            return (
+              <Button
+                onClick={() => {
+                  setClubSelected(null);
+                }}
+              >
+                Añadir Club
+              </Button>
+            );
+          }
+          return null;
+        })()}
         description="Añadir Club"
       >
         <ClubForm
@@ -70,13 +68,25 @@ const ClubsPage = () => {
             )}
             <div className="flex gap-2 mt-2">
               <button onClick={() => handleDelete(club.id)}>Eliminar</button>
-              <button
-                onClick={() => {
-                  setClubSelected(club);
-                }}
+              <Modal
+                title="Editar Equipo"
+                description="Edita los datos del equipo"
+                button={
+                  <button
+                    onClick={() => {
+                      setClubSelected(club);
+                    }}
+                  >
+                    Editar
+                  </button>
+                }
               >
-                Editar
-              </button>
+                <ClubForm
+                  closeModal={() => ({})}
+                  setData={setData}
+                  club={clubSelected}
+                />
+              </Modal>
             </div>
           </div>
         ))}

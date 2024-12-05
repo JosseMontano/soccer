@@ -58,7 +58,7 @@ const TournamentPage = () => {
                 setTournamentSelected(v);
               }}
             >
-              Editar torneo
+              Editar torneos
             </button>
           </div>
         ))}

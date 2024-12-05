@@ -5,12 +5,13 @@ import { Club } from "../api/responses";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ClubDTOschema } from "../validations/ClubDTO.schema";
+import { sendCloudinary } from "@/modules/core/utils/cloudinary";
+import { useState } from "react";
 
 interface Props {
   club: Club | null;
   closeModal: () => void;
   setData: SetData<Club[]>;
-
 }
 
 const ClubForm = ({ closeModal, setData, club }: Props) => {
@@ -30,12 +31,19 @@ const ClubForm = ({ closeModal, setData, club }: Props) => {
     resolver: yupResolver(ClubDTOschema),
   });
 
-  const onSubmit = (form: ClubDTO) => {
-    console.log(form)
+  const [progress, setProgress] = useState(0);
+  console.log(progress);
+  const onSubmit = async (form: ClubDTO) => {
+    let url: string | null = null;
+    if (form.logo.length > 0) {
+      url = await sendCloudinary(form.logo[0], setProgress);
+    }
+
     if (club === null) {
       postMutation(
         {
           ...form,
+          logo: url,
         },
         {
           onSuccess: (res) => {
@@ -49,6 +57,7 @@ const ClubForm = ({ closeModal, setData, club }: Props) => {
       putMutation(
         {
           ...form,
+          logo: url,
         },
         {
           params: { id: club.id },
@@ -70,18 +79,17 @@ const ClubForm = ({ closeModal, setData, club }: Props) => {
         type="text"
         placeholder="Ingrese el nombre del club"
         {...register("name")}
-      />  
+      />
       <p>{errors.name?.message}</p>
       <select {...register("categoryId")}>
         <option value="">Seleccione una categoria</option>
-        {
-          categories?.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))
-        }
+        {categories?.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
+        ))}
       </select>
+      <input type="file" {...register("logo")} />
       <button type="submit">{club ? "Editar Club" : "Registrar Club"}</button>
     </form>
   );
