@@ -5,7 +5,6 @@ import { ResponseType } from "../../common/interfaces/response";
 import { ZodError } from "zod";
 import { RequestParams } from "../../common/interfaces/request";
 
-
 const prisma = new PrismaClient();
 export const endPointClubs = "/clubs";
 
@@ -42,8 +41,46 @@ export function clubRoutes(router: FastifyInstance) {
           .send({ message: "Server error " + error.message });
     }
   });
-  
-  
+  router.get(
+    endPointClubs + "/category/:categoryId",
+    async (request, reply) => {
+      try {
+        const { categoryId } = request.params as { categoryId: string };
+
+        const clubs = await prisma.club.findMany({
+          where: {
+            clubCategories: {
+              some: {
+                categoryId: categoryId, 
+              },
+            },
+          },
+          include: {
+            clubCategories: {
+              include: {
+                category: true,
+              },
+            },
+          },
+        });
+
+        const response: ResponseType = {
+          message:
+            "Clubs obtenidos exitosamente para la categoría especificada",
+          data: clubs,
+          status: 200,
+        };
+
+        return reply.status(200).send(response);
+      } catch (error) {
+        if (error instanceof Error)
+          return reply
+            .status(500)
+            .send({ message: "Server error " + error.message });
+      }
+    }
+  );
+  router;
   router.get(endPointClubs + "/select", async (request, reply) => {
     try {
       const clubs = await prisma.club.findMany({
@@ -123,7 +160,6 @@ export function clubRoutes(router: FastifyInstance) {
           .send({ message: "Server error " + error.message });
     }
   });
-
 
   router.put(endPointClubs + "/:id", async (request, reply) => {
     try {

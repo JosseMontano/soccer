@@ -1,8 +1,10 @@
 import Icon from "@/modules/core/components/icons/Icon";
 import Banner from "../components/Banner";
 import TournamentTable from "../components/TournamentTable";
+import useFetch from "@/modules/core/hooks/useFetch";
 
 const HomePage = () => {
+
   return (
     <section className="flex flex-col p-10 gap-6">
       <Banner />

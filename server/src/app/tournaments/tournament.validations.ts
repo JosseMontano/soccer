@@ -18,7 +18,14 @@ export const createTournamentSchema = z
     formatId: z.string().min(1, "El formato del torneo es obligatorio"),
     finalFormatId: z.string().optional(), // Campo opcional
     categoryId: z.string().min(1, "La categoría del torneo es obligatoria"),
+    clubIds: z
+    .array(z.string().min(1, "Cada ID de club debe ser válido"))
+    .min(2, "Debe haber al menos 2 clubes")
+    .refine((arr) => arr.length % 2 === 0, {
+      message: "El número de clubes debe ser par",
+    }),
   })
+  
   .superRefine((data, ctx) => {
     const dateStart = new Date(data.dateStart);
     const dateEnd = new Date(data.dateEnd);

@@ -6,6 +6,7 @@ import {
   updateTournamentSchema,
 } from "./tournament.validations";
 import { ResponseType } from "../../common/interfaces/response";
+import { endpoint } from "../clubsCategories/clubs.controller";
 
 const prisma = new PrismaClient();
 export const endPointTournaments = "/tournaments";
@@ -35,11 +36,60 @@ export function tournamentRoutes(router: FastifyInstance) {
       }
     }
   });
-
+  router.get(
+    `${endPointTournaments}/tournamentsPublic`,
+    async (request, reply) => {
+      try {
+      const tournaments = await prisma.tournaments.findMany({
+        where: {
+          games:{
+            some:{},
+            },
+          },
+          include:{
+            games: {include: {
+              firstTeam:true,
+              secondTeam:true
+            }},  
+          }
+        });
+        const response: ResponseType = {
+          message: "Torneos obtenidos exitosamente",
+          data: tournaments,
+          status: 200,
+        };
+        return reply.status(200).send(response);
+      } catch (error) {
+        if (error instanceof Error) {
+          return reply
+            .status(500)
+            .send({ message: "Error del servidor: " + error.message });
+        }
+      }
+    }
+  );
   router.post(endPointTournaments, async (request, reply) => {
     try {
       const data = createTournamentSchema.parse(request.body);
 
+      const clubs = await prisma.club.findMany({
+        where: {
+          id: { in: data.clubIds },
+        },
+        include: {
+          clubCategories: true,
+        },
+      });
+
+      // Verificar si todos los clubes están en la categoría del torneo
+      const valid = clubs.every((club) =>
+        club.clubCategories.some((category) => category.id === data.categoryId)
+      );
+      if (valid) {
+        return reply.status(400).send({
+          message: "Algunos clubes no pertenecen a la categoría del torneo",
+        });
+      }
       const newTournament = await prisma.tournaments.create({
         data: {
           name: data.name,
@@ -50,6 +100,15 @@ export function tournamentRoutes(router: FastifyInstance) {
           finalFormatId: data.finalFormatId,
           categoryId: data.categoryId,
         },
+      });
+
+      await prisma.tournamentClub.createMany({
+        data: data.clubIds.map((clubId) => {
+          return {
+            tournamentId: newTournament.id,
+            clubId: clubId,
+          };
+        }),
       });
 
       const response: ResponseType = {
@@ -176,11 +235,9 @@ export function tournamentRoutes(router: FastifyInstance) {
         const tournament = await prisma.tournaments.findUnique({
           where: { id },
           include: {
-            category: {
+            tournamentClubs: {
               include: {
-                clubCategories: {
-                  include: { club: true },
-                },
+                club: true,
               },
             },
           },
@@ -190,7 +247,7 @@ export function tournamentRoutes(router: FastifyInstance) {
           return reply.status(404).send({ message: "Torneo no encontrado." });
         }
 
-        const teams = tournament.category.clubCategories.map(
+        const teams = tournament.tournamentClubs.map(
           (clubCategory) => clubCategory.club
         );
         if (teams.length < 2) {

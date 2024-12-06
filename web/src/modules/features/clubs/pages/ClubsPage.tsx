@@ -73,7 +73,7 @@ const ClubsPage = () => {
                 description="Edita los datos del equipo"
                 button={
                   <button
-                    onClick={() => {
+                    onClick={() => {  
                       setClubSelected(club);
                     }}
                   >

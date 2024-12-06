@@ -33,7 +33,7 @@ model Categories {
   id             String           @id @default(cuid())
   name           String           @unique
   typeCategoryId String
-  typeCategory   TypeCategories   @relation(fields: [typeCategoryId], references: [id])
+  typeCategory   TypeCategories   @relation(fields: [typeCategoryId], references: [id], onDelete: Cascade)
   minAge         Int
   maxAge         Int
   clubCategories ClubCategories[]
@@ -41,12 +41,13 @@ model Categories {
 }
 
 model Club {
-  id             String           @id @default(cuid())
-  name           String           @unique
-  logo           String? // Logo opcional del club
-  players        Player[] // Relación con jugadores
-  clubCategories ClubCategories[] // Relación con categorías del club
-  historyPlayers HistoryPlayer[] // Relación con historial de jugadores
+  id              String           @id @default(cuid())
+  name            String           @unique
+  logo            String? // Logo opcional del club
+  players         Player[] // Relación con jugadores
+  clubCategories  ClubCategories[] // Relación con categorías del club
+  historyPlayers  HistoryPlayer[] // Relación con historial de jugadores
+  tournamentClubs TournamentClub[]
 
   gamesAsFirstTeam  Game[] @relation("FirstTeam")
   gamesAsSecondTeam Game[] @relation("SecondTeam")
@@ -58,8 +59,8 @@ model ClubCategories {
   clubId     String
   categoryId String
 
-  club     Club       @relation(fields: [clubId], references: [id])
-  category Categories @relation(fields: [categoryId], references: [id])
+  club     Club       @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  category Categories @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@unique([clubId, categoryId]) // Ensure a club is not linked to the same category more than once
 }
@@ -75,13 +76,13 @@ model Player {
   name           String
   lastName       String
   nationality    String
-  commet         String? 
+  commet         String?
   birthdate      DateTime
   gender         String?
   photo          String?
   clubId         String
   club           Club            @relation(fields: [clubId], references: [id])
-  historyPlayers HistoryPlayer[] 
+  historyPlayers HistoryPlayer[]
   event          GameEvent[]
 }
 
@@ -127,9 +128,19 @@ model Tournaments {
   fixtureGenerated Boolean  @default(false) // Indica si el fixture fue generado
   games            Game[] // Relación con los partidos del torneo
 
-  format      Format     @relation("TournamentFormat", fields: [formatId], references: [id]) // Formato del torneo
-  finalFormat Format?    @relation("FinalFormat", fields: [finalFormatId], references: [id]) // Formato de la final (opcional)
-  category    Categories @relation(fields: [categoryId], references: [id]) // Categoría del torneo
+  format          Format           @relation("TournamentFormat", fields: [formatId], references: [id]) // Formato del torneo
+  finalFormat     Format?          @relation("FinalFormat", fields: [finalFormatId], references: [id]) // Formato de la final (opcional)
+  category        Categories       @relation(fields: [categoryId], references: [id]) // Categoría del torneo
+  tournamentClubs TournamentClub[]
+}
+
+model TournamentClub {
+  id           String @id @default(cuid())
+  tournamentId String
+  clubId       String
+
+  tournament Tournaments @relation(fields: [tournamentId], references: [id])
+  club       Club        @relation(fields: [clubId], references: [id])
 }
 
 model Game {
@@ -150,18 +161,19 @@ model Game {
 
   tournament Tournaments @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
 
-  firstTeam  Club  @relation("FirstTeam", fields: [firstTeamId], references: [id])
-  secondTeam Club  @relation("SecondTeam", fields: [secondTeamId], references: [id])
-  winner     Club? @relation("Winner", fields: [winnerId], references: [id]) // Relación opcional con el equipo ganador
+  firstTeam  Club        @relation("FirstTeam", fields: [firstTeamId], references: [id], onDelete: Cascade)
+  secondTeam Club        @relation("SecondTeam", fields: [secondTeamId], references: [id], onDelete: Cascade)
+  winner     Club?       @relation("Winner", fields: [winnerId], references: [id], onDelete: Cascade) // Relación opcional con el equipo ganador
   events     GameEvent[]
 }
-model GameEvent{
-  id         String   @id @default(cuid())
-  gameId     String   // Relación con el partido
-  playerId   String   // Relación con el jugador
-  eventType  String   // Tipo de evento ("goal", "yellow_card", "red_card", "foul")
-  timestamp  DateTime @default(now()) // Momento en el que ocurrió el evento
 
-  game       Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+model GameEvent {
+  id        String   @id @default(cuid())
+  gameId    String // Relación con el partido
+  playerId  String // Relación con el jugador
+  eventType String // Tipo de evento ("goal", "yellow_card", "red_card", "foul")
+  timestamp DateTime @default(now()) // Momento en el que ocurrió el evento
+
+  game   Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
 }

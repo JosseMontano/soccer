@@ -23,6 +23,11 @@ declare global {
       request: ClubDTO;
       response: Club;
     };
+    "GET /clubs/category/:idCategory": {
+      params: { idCategory: string };
+      request: never;
+      response: Club[];
+    };
     "DELETE /clubs/:id": {
       params: { id: string };
       request: null;

@@ -1,13 +1,14 @@
 import Icon from "@/modules/core/components/icons/Icon";
 import clsx from "clsx";
 import { useState } from "react";
-
+import { TournamentFixture } from "../../tournament/api/responses";
+import DefaulShield from "@/assets/defaultshield.png";
 interface Props {
   open?: boolean;
-  title: string;
+  tournament: TournamentFixture;
 }
 
-const TournamentTableRow = ({ open, title }: Props) => {
+const TournamentTableRow = ({ open, tournament }: Props) => {
   const [openState, setOpenState] = useState(open);
 
   return (
@@ -22,9 +23,12 @@ const TournamentTableRow = ({ open, title }: Props) => {
           </span>
           <div className="flex flex-col items-start">
             <strong>
-              {title} <span className="opacity-60">(2)</span>
+              {tournament.name}{" "}
+              <span className="opacity-60">({tournament.games.length})</span>
             </strong>
-            <small className="text-xs opacity-80">Cochabamba</small>
+            <small className="text-xs opacity-80">
+              {tournament.description}
+            </small>
           </div>
         </div>
         <div>
@@ -51,87 +55,35 @@ const TournamentTableRow = ({ open, title }: Props) => {
             </p>
           </header>
           <main className="flex flex-col bg-gray-900">
-            <div className="flex items-center gap-8 py-3 justify-center">
-              <div className="w-56 flex items-center gap-4">
-                <div className="bg-gray-800 px-2 py-2 min-w-16 max-w-16 aspect-square rounded-xl">
-                  <img
-                    src="https://as01.epimg.net/img/comunes/fotos/fichas/equipos/large/65.png"
-                    className="w-full h-full object-contain"
-                  />
+            {tournament.games.map((game) => (
+              <div className="flex items-center gap-8 py-3 justify-center">
+                <div className="w-56 flex items-center gap-4">
+                  <div className="bg-gray-800 px-2 py-2 min-w-16 max-w-16 aspect-square rounded-xl">
+                    <img
+                      src={game.firstTeam.logo || DefaulShield}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <p className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">
+                    {game.firstTeam.name}
+                  </p>
                 </div>
-                <p className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">
-                  Manchester City
-                </p>
-              </div>
-              <div className="bg-gray-800 px-2 py-2 w-10 aspect-square rounded-full flex items-center justify-center">
-                VS
-              </div>
-              <div className="w-56 flex items-center gap-4 justify-end">
-                <p className="flex-1 text-end whitespace-nowrap overflow-hidden text-ellipsis">
-                  Barcelona FC
-                </p>
-                <div className="bg-gray-800 px-2 py-2 min-w-16 max-w-16 aspect-square rounded-xl">
-                  <img
-                    className="w-full h-full object-contain"
-                    src="https://img.icons8.com/?size=512&id=21578&format=png"
-                  />
+                <div className="bg-gray-800 px-2 py-2 w-10 aspect-square rounded-full flex items-center justify-center">
+                  VS
                 </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-8 py-3 justify-center">
-              <div className="w-56 flex items-center gap-4">
-                <div className="bg-gray-800 px-2 py-2 min-w-16 max-w-16 aspect-square rounded-xl">
-                  <img
-                    src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgQYt0Q6XeOI2AzL-gVTQpsdJkZGF9iMmG5SExYzR0inS3mMWnbLLC-m23nTbF4QKmFx4dS_8gbiPY6uULWeJ9bakRE3oHbP5SOiqqCPuqq5F-WHHR_Cn_vvOZT5I_Lfm3TU5GnBlzeR6A/s512/Bolivia.png"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <p className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">
-                  Bolivia
-                </p>
-              </div>
-              <div className="bg-gray-800 px-2 py-2 w-10 aspect-square rounded-full flex items-center justify-center">
-                VS
-              </div>
-              <div className="w-56 flex items-center gap-4 justify-end">
-                <p className="flex-1 text-end whitespace-nowrap overflow-hidden text-ellipsis">
-                  Real Madrid
-                </p>
-                <div className="bg-gray-800 px-2 py-2 min-w-16 max-w-16 aspect-square rounded-xl">
-                  <img
-                    className="w-full h-full object-contain"
-                    src="https://upload.wikimedia.org/wikipedia/en/thumb/5/56/Real_Madrid_CF.svg/1200px-Real_Madrid_CF.svg.png"
-                  />
+                <div className="w-56 flex items-center gap-4 justify-end">
+                  <p className="flex-1 text-end whitespace-nowrap overflow-hidden text-ellipsis">
+                    {game.secondTeam.name}
+                  </p>
+                  <div className="bg-gray-800 px-2 py-2 min-w-16 max-w-16 aspect-square rounded-xl">
+                    <img
+                      className="w-full h-full object-contain"
+                      src={game.secondTeam.logo || DefaulShield}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="flex items-center gap-8 py-3 justify-center">
-              <div className="w-56 flex items-center gap-4">
-                <div className="bg-gray-800 px-2 py-2 min-w-16 max-w-16 aspect-square rounded-xl">
-                  <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/c/ce/Escudo_del_club_deportivo_y_cultural_real_tomayapo.png"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <p className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">
-                  Real Tomayapo
-                </p>
-              </div>
-              <div className="bg-gray-800 px-2 py-2 w-10 aspect-square rounded-full flex items-center justify-center">
-                VS
-              </div>
-              <div className="w-56 flex items-center gap-4 justify-end">
-                <p className="flex-1 text-end whitespace-nowrap overflow-hidden text-ellipsis">
-                  Argentina
-                </p>
-                <div className="bg-gray-800 px-2 py-2 min-w-16 max-w-16 aspect-square rounded-xl">
-                  <img
-                    className="w-full h-full object-contain"
-                    src="https://upload.wikimedia.org/wikipedia/commons/0/06/Selecci%C3%B3n_de_f%C3%BAtbol_de_Argentina.png"
-                  />
-                </div>
-              </div>
-            </div>
+            ))}
           </main>
         </div>
       </div>

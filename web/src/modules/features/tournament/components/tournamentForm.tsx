@@ -12,11 +12,14 @@ interface Props {
   setData: SetData<Tournament[]>;
 }
 
-const GameForm = ({ closeModal, setData, tournament }: Props) => {
-  const { postData } = useFetch();
-  const postMutation = postData("POST /tournament");
-  const putMutation = postData("PUT /tournament/:id");
+const TournamentForm = ({ closeModal, setData, tournament }: Props) => {
+  const { postData, fetchData } = useFetch();
+  const { data: formats } = fetchData("GET /formats");
+  const { data: categories } = fetchData("GET /categories");
+  const postMutation = postData("POST /tournaments");
+  const putMutation = postData("PUT /tournaments/:id");
   const {
+    watch,
     register,
     handleSubmit,
     formState: { errors },
@@ -25,13 +28,25 @@ const GameForm = ({ closeModal, setData, tournament }: Props) => {
       name: tournament?.name,
       dateStart: tournament?.dateStart,
       dateEnd: tournament?.dateEnd,
-      format: tournament?.format,
+      formatId: tournament?.formatId,
+      description: tournament?.description,
+      categoryId: tournament?.categoryId,
+      finalFormatId: tournament?.finalFormatId,
+      clubIds: [],
     },
     resolver: yupResolver(TournamentDTOschema),
   });
+  //hacer un endpoint que me traiga todos los club de esa categoria
   /* en express enviar la foto = investigar*/
-
+  const categoryId = watch("categoryId");
+  const { data: clubs } = fetchData([
+    "GET /clubs/category/:idCategory",
+    {
+      idCategory: categoryId,
+    },
+  ]);
   const onSubmit = (form: TournamentDTO) => {
+    console.log(form);
     if (tournament === null) {
       postMutation(
         {
@@ -73,8 +88,14 @@ const GameForm = ({ closeModal, setData, tournament }: Props) => {
       />
       <p>{errors.name?.message}</p>
       <input
+        type="text"
+        placeholder="Ingrese la descripcion del torneo"
+        {...register("description")}
+      />
+      <p>{errors.description?.message}</p>
+      <input
         type="date"
-        placeholder="Ingrese la fecha de inicio del torneo"
+        placeholder="Ingrese la fecha que inicia el torneo"
         {...register("dateStart")}
       />
       <p>{errors.dateStart?.message}</p>
@@ -84,12 +105,41 @@ const GameForm = ({ closeModal, setData, tournament }: Props) => {
         {...register("dateEnd")}
       />
       <p>{errors.dateEnd?.message}</p>
-      <input
-        type="text"
-        placeholder="Ingrese el formato del torneo"
-        {...register("format")}
-      />
-      <p>{errors.format?.message}</p>
+      <select {...register("formatId")}>
+        <option value="">Seleccione un formato</option>
+        {formats?.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
+        ))}
+      </select>
+      <p>{errors.formatId?.message}</p>
+      <select {...register("finalFormatId")}>
+        <option value="">Seleccione el formato final</option>
+        {formats?.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
+        ))}
+      </select>
+      <p>{errors.finalFormatId?.message}</p>
+      <select {...register("categoryId")}>
+        <option value="">Seleccione la categoria del torneo</option>
+        {categories?.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
+        ))}
+      </select>
+      <p>{errors.categoryId?.message}</p>
+      <div>
+        {clubs?.map((c) => (
+          <div className="flex">
+            <input {...register("clubIds")} value={c.id} type="checkbox" />{" "}
+            <p>{c.name}</p>
+          </div>
+        ))}
+      </div>
       <button type="submit">
         {tournament ? "Editar torneo" : "Publicar torneo"}
       </button>
@@ -97,4 +147,4 @@ const GameForm = ({ closeModal, setData, tournament }: Props) => {
   );
 };
 
-export default GameForm;
+export default TournamentForm;

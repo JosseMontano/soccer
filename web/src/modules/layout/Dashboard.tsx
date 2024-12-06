@@ -7,7 +7,7 @@ import useUserStore from "../core/store/userStore";
 const DATA = [
   {
     to: "/home",
-    name: "Torneos",
+    name: "Inicio",
     icon: Icon.Types.HOME,
     role: ["1", "2", "3", "4"],
   },
