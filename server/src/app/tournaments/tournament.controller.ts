@@ -40,19 +40,30 @@ export function tournamentRoutes(router: FastifyInstance) {
     `${endPointTournaments}/tournamentsPublic`,
     async (request, reply) => {
       try {
-      const tournaments = await prisma.tournaments.findMany({
-        where: {
-          games:{
-            some:{},
+        const tournaments = await prisma.tournaments.findMany({
+          where: {
+            games: {
+              some: {}, // Ensures tournaments with at least one game are fetched
             },
           },
-          include:{
-            games: {include: {
-              firstTeam:true,
-              secondTeam:true
-            }},  
-          }
+          include: {
+            games: {
+              include: {
+                firstTeam: {
+                  include: {
+                    players: true, // Include players of the first team
+                  },
+                },
+                secondTeam: {
+                  include: {
+                    players: true, // Include players of the second team
+                  },
+                },
+              },
+            },
+          },
         });
+  
         const response: ResponseType = {
           message: "Torneos obtenidos exitosamente",
           data: tournaments,

@@ -66,14 +66,30 @@ const TournamentTableRow = ({ open, tournament }: Props) => {
                   </div>
                   <p className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">
                     {game.firstTeam.name}
+                    <div>
+                      {game.firstTeam.players.map((v) => (
+                        <p>{v.name}</p>
+                      ))}
+                    </div>
                   </p>
                 </div>
+
+                <span>{game.goalsFirstTeam}</span>
+
                 <div className="bg-gray-800 px-2 py-2 w-10 aspect-square rounded-full flex items-center justify-center">
                   VS
                 </div>
+
+                <span>{game.goalsSecondTeam}</span>
+
                 <div className="w-56 flex items-center gap-4 justify-end">
                   <p className="flex-1 text-end whitespace-nowrap overflow-hidden text-ellipsis">
                     {game.secondTeam.name}
+                    <div>
+                      {game.secondTeam.players.map((v) => (
+                        <p>{v.name}</p>
+                      ))}
+                    </div>
                   </p>
                   <div className="bg-gray-800 px-2 py-2 min-w-16 max-w-16 aspect-square rounded-xl">
                     <img

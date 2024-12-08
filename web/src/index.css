@@ -31,7 +31,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
-  form input, form option{
+  form input, form option, select{
     color:black;
   }
   .dark {

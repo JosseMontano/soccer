@@ -1,3 +1,5 @@
+import { Player } from "../../players/api/responses";
+
 export interface Tournament {
   id: string;
   name: string;
@@ -41,11 +43,13 @@ export interface TournamentFixture {
       id: string;
       name: string;
       logo: string;
+      players: Player[]
     };
     secondTeam: {
       id: string;
       name: string;
       logo: string;
+      players: Player[]
     };
   }[];
 }
