@@ -36,6 +36,7 @@ export function tournamentRoutes(router: FastifyInstance) {
       }
     }
   });
+
   router.get(
     `${endPointTournaments}/tournamentsPublic`,
     async (request, reply) => {
@@ -63,13 +64,71 @@ export function tournamentRoutes(router: FastifyInstance) {
             },
           },
         });
-  
+
+        // Fetch all games to calculate total victories
+        const allGames = await prisma.game.findMany();
+
+        // Count victories for each team
+        const victoryCount: Record<string, number> = {};
+        allGames.forEach((game) => {
+          if (game.winnerId) {
+            victoryCount[game.winnerId] = (victoryCount[game.winnerId] || 0) + 1;
+          }
+        });
+
+        // Fetch the last 5 games for each team, excluding the current tournament
+        const teamHistories: Record<string, any[]> = {};
+        for (const game of allGames) {
+          const teamIds = [game.firstTeamId, game.secondTeamId];
+          for (const teamId of teamIds) {
+            if (!teamHistories[teamId]) {
+              teamHistories[teamId] = await prisma.game.findMany({
+                where: {
+                  OR: [
+                    { firstTeamId: teamId },
+                    { secondTeamId: teamId },
+                  ],
+                  tournamentId: { not: game.tournamentId }, // Exclude current tournament
+                },
+                include: {
+                  firstTeam: true,
+                  secondTeam: true,
+                },
+                orderBy: {
+                  date: 'desc', // Replace `date` with your actual game date field
+                },
+                take: 5, // Limit to last 5 games
+              });
+            }
+          }
+        }
+
+        // Attach `amountVictories` and `history` to each team's data in tournaments
+        const enrichedTournaments = tournaments.map((tournament) => ({
+          ...tournament,
+          games: tournament.games.map((game) => ({
+            ...game,
+            firstTeam: {
+              ...game.firstTeam,
+              amountVictories: victoryCount[game.firstTeam.id] || 0,
+              history: teamHistories[game.firstTeam.id] || [],
+            },
+            secondTeam: {
+              ...game.secondTeam,
+              amountVictories: victoryCount[game.secondTeam.id] || 0,
+              history: teamHistories[game.secondTeam.id] || [],
+            },
+          })),
+        }));
+
+        // Send enriched response
         const response: ResponseType = {
           message: "Torneos obtenidos exitosamente",
-          data: tournaments,
+          data: enrichedTournaments,
           status: 200,
         };
         return reply.status(200).send(response);
+
       } catch (error) {
         if (error instanceof Error) {
           return reply
@@ -79,6 +138,8 @@ export function tournamentRoutes(router: FastifyInstance) {
       }
     }
   );
+
+
   router.post(endPointTournaments, async (request, reply) => {
     try {
       const data = createTournamentSchema.parse(request.body);
@@ -279,7 +340,7 @@ export function tournamentRoutes(router: FastifyInstance) {
         const totalDays = Math.ceil(
           (new Date(tournament.dateEnd).getTime() -
             new Date(tournament.dateStart).getTime()) /
-            86400000
+          86400000
         );
         if (totalDays < teams.length / 2) {
           return reply.status(400).send({
