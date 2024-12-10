@@ -12,7 +12,7 @@ from sklearn.model_selection import train_test_split
 app = FastAPI()
 
 # Configure CORS
-origins = ["http://localhost:5173", "exp://192.168.1.13:19000"]
+origins = ["http://localhost:5173", "http://localhost:8000","exp://192.168.1.13:19000"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -95,12 +95,12 @@ def preditcion(request: PredictionRequest):
 
     # Crear un mensaje claro
     result_message = (
-        f"La probabilidad de que el equipo local pierda es del {prob_defeat:.2f}%, "
+        f"La probabilidad de que el equipo pierda es del {prob_defeat:.2f}%, "
         f"de que haya empate es del {prob_draw:.2f}%, "
-        f"y de que el equipo local gane es del {prob_victory:.2f}%."
+        f"y de que el equipo gane es del {prob_victory:.2f}%."
     )
 
-    return {"message": result_message, "status": 200, data:[]}
+    return {"message": result_message, "status": 200, "data":result_message}
 
 # Run the application
 if __name__ == '__main__':

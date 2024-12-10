@@ -21,7 +21,7 @@ export interface Tournament {
   fixtureGenerated: boolean;
 }
 
-interface TeamHistoryGame {
+export interface TeamHistoryGame {
   id: string;
   firstTeamId: string;
   secondTeamId: string;

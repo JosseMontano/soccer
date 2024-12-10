@@ -1,8 +1,14 @@
 import Icon from "@/modules/core/components/icons/Icon";
 import clsx from "clsx";
 import { useState } from "react";
-import { TournamentFixture } from "../../tournament/api/responses";
+import { TeamHistoryGame, TournamentFixture } from "../../tournament/api/responses";
 import DefaulShield from "@/assets/defaultshield.png";
+
+import useFetch from "@/modules/core/hooks/useFetch";
+import { toastSuccess } from "@/modules/core/utils/toast";
+import Modal from "@/modules/core/components/ui/Modal";
+import { DataTable } from "@/components/ui/data-table";
+import { ColumnDef } from "@tanstack/react-table";
 interface Props {
   open?: boolean;
   tournament: TournamentFixture;
@@ -10,6 +16,56 @@ interface Props {
 
 const TournamentTableRow = ({ open, tournament }: Props) => {
   const [openState, setOpenState] = useState(open);
+
+  const columns: ColumnDef<TeamHistoryGame>[] = [
+    {
+      accessorKey: "firstTeam.name",
+      header: "Local",
+    },
+    {
+      accessorKey: "secondTeam.name",
+      header: "Visitante",
+    },
+    {
+      accessorKey: "goalsFirstTeam",
+      header: "Goles del primer equipo",
+    },
+    {
+      accessorKey: "goalsSecondTeam",
+      header: "Goles del segundo equipo",
+    },
+    {
+      accessorKey: "foulsFirstTeam",
+      header: "Faltas del primer equipo",
+    },
+    {
+      accessorKey: "foulsSecondTeam",
+      header: "Faltas del segundo equipo",
+    },
+  ];
+
+  const { postData } = useFetch();
+  const postMutation = postData("POST /games/events/prediction");
+
+  const onSubmit = (
+    amountVictoriesTeam1: number,
+    amountVictoriesTeam2: number
+  ) => {
+    const form = {
+      amountVictoriesTeam1,
+      amountVictoriesTeam2,
+    };
+    postMutation(
+      {
+        ...form,
+      },
+      {
+        onSuccess: (res) => {
+          toastSuccess(res.message);
+        },
+      }
+    );
+  };
 
   return (
     <div className="flex flex-col">
@@ -46,7 +102,11 @@ const TournamentTableRow = ({ open, tournament }: Props) => {
       >
         <div className="overflow-hidden">
           <header className="h-10 flex justify-between px-10 items-center">
-            <p className="text-sm opacity-80">Partido</p>
+            <div className="flex gap-3">
+              <p className="text-sm opacity-80">Partido</p>
+              <span onClick={()=>onSubmit(10,20)}>BOT</span>
+            </div>
+
             <p className="opacity-80 flex items-center gap-2 text-xs">
               <div className="h-5 aspect-square">
                 <Icon type={Icon.Types.CALENDAR} />
@@ -58,7 +118,32 @@ const TournamentTableRow = ({ open, tournament }: Props) => {
             {tournament.games.map((game) => (
               <div className="flex items-center gap-8 py-3 justify-center">
                 <div className="w-56 flex items-center gap-4">
-                  <div className="bg-gray-800 px-2 py-2 min-w-16 max-w-16 aspect-square rounded-xl">
+                    <Modal
+                    title={"Informacion del equipo " + game.firstTeam.name}
+                    description="Informacion de los integrantes y historial de los ultimos 5 partidos"
+                    button={
+                      <span className="cursor-pointer">
+                        <Icon type={Icon.Types.INFO} />
+                      </span>
+                    }
+                  >
+                    <div>
+                      <h2 className="text-[22px] font-semibold">Jugadores</h2>
+                      {game.firstTeam.players.map((v) => (
+                        <p className="text-[13px]">
+                          {v.name} {v.lastName}
+                        </p>
+                      ))}
+                    </div>
+                    <div>
+                      <DataTable
+                        columns={columns}
+                        data={game.firstTeam.history}
+                      />
+                    </div>
+                  </Modal>  
+              
+                     <div className="bg-gray-800 px-2 py-2 min-w-16 max-w-16 aspect-square rounded-xl">
                     <img
                       src={game.firstTeam.logo || DefaulShield}
                       className="w-full h-full object-contain"
@@ -66,30 +151,16 @@ const TournamentTableRow = ({ open, tournament }: Props) => {
                   </div>
                   <p className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">
                     {game.firstTeam.name}
-                    <div>
-                      {game.firstTeam.players.map((v) => (
-                        <p>{v.name}</p>
-                      ))}
-                    </div>
                   </p>
                 </div>
-
                 <span>{game.goalsFirstTeam}</span>
-
                 <div className="bg-gray-800 px-2 py-2 w-10 aspect-square rounded-full flex items-center justify-center">
                   VS
                 </div>
-
                 <span>{game.goalsSecondTeam}</span>
-
                 <div className="w-56 flex items-center gap-4 justify-end">
                   <p className="flex-1 text-end whitespace-nowrap overflow-hidden text-ellipsis">
                     {game.secondTeam.name}
-                    <div>
-                      {game.secondTeam.players.map((v) => (
-                        <p>{v.name}</p>
-                      ))}
-                    </div>
                   </p>
                   <div className="bg-gray-800 px-2 py-2 min-w-16 max-w-16 aspect-square rounded-xl">
                     <img
@@ -97,6 +168,32 @@ const TournamentTableRow = ({ open, tournament }: Props) => {
                       src={game.secondTeam.logo || DefaulShield}
                     />
                   </div>
+                  <span className="cursor-pointer">
+                          <Modal
+                      title={"Informacion del equipo " + game.secondTeam.name}
+                      description="Informacion de los integrantes y historial de los ultimos 5 partidos"
+                      button={
+                        <span className="cursor-pointer">
+                          <Icon type={Icon.Types.INFO} />
+                        </span>
+                      }
+                    >
+                      <div>
+                        <h2 className="text-[22px] font-semibold">Jugadores</h2>
+                        {game.secondTeam.players.map((v) => (
+                          <p>
+                            {v.name} {v.lastName}
+                          </p>
+                        ))}
+                      </div>
+                      <div>
+                        <DataTable
+                          columns={columns}
+                          data={game.secondTeam.history}
+                        />
+                      </div>
+                    </Modal> 
+                  </span>
                 </div>
               </div>
             ))}

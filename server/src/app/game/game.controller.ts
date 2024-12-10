@@ -103,6 +103,61 @@ export function gameRoutes(router: FastifyInstance) {
     }
   });
 
+  router.post(`${endPointGameEvents}/prediction`, async (request, reply) => {
+    try {
+      // Extract data from the request body
+      const { amountVictoriesTeam1, amountVictoriesTeam2 } = request.body as {
+        amountVictoriesTeam1: number;
+        amountVictoriesTeam2: number;
+      };
+
+      // Validate input
+      if (amountVictoriesTeam1 === undefined || amountVictoriesTeam2 === undefined) {
+        return reply.status(400).send({
+          message: "Both amountVictoriesTeam1 and amountVictoriesTeam2 are required.",
+        });
+      }
+
+      // Send data to the prediction API
+      const response = await fetch("http://localhost:5000/api/prediction", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          amountVictoriesTeam1,
+          amountVictoriesTeam2,
+        }),
+      });
+
+      // Parse response from the external API
+      const result = await response.json();
+
+      // Handle errors from the external API
+      if (!response.ok) {
+        return reply.status(response.status).send({
+          message: "Failed to fetch prediction.",
+          error: result,
+        });
+      }
+
+      // Send the result back to the client
+      return reply.status(200).send({
+        message: "Prediccion Generada exitosamente",
+        data: result.data,
+        status: result.status,
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        return reply.status(500).send({
+          message: "An unexpected error occurred.",
+          error: error.message,
+        });
+      }
+    }
+  });
+
   // Obtener eventos de un partido
   router.get(`${endPointGameEvents}/:gameId`, async (request, reply) => {
     try {

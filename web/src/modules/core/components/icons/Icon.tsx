@@ -8,6 +8,7 @@ import IconSettings from "./tabler/iconSettings";
 import IconShield from "./tabler/iconShield";
 import IconTrophy from "./tabler/iconTrophy";
 import IconX from "./tabler/iconX";
+import IconInfo from "./tabler/iconInfo"
 
 export enum ICON {
   CHECK = "check",
@@ -20,6 +21,7 @@ export enum ICON {
   CALENDAR = "calendar",
   TROPHY = "trophy",
   CHEVRON_DOWN = "chevron_down",
+  INFO ="info"
 }
 
 interface Props {
@@ -38,6 +40,7 @@ const Icon = ({ type }: Props) => {
     [ICON.CALENDAR]: <IconCalendar />,
     [ICON.TROPHY]: <IconTrophy />,
     [ICON.CHEVRON_DOWN]: <IconChevronDown />,
+    [ICON.INFO]: <IconInfo />
   };
   return icons[type];
 };
