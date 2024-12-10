@@ -1,6 +1,6 @@
 import Icon, { ICON } from "@/modules/core/components/icons/Icon";
 import clsx from "clsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   TeamHistoryGame,
   TournamentFixture,
@@ -12,6 +12,7 @@ import { toastSuccess } from "@/modules/core/utils/toast";
 import Modal from "@/modules/core/components/ui/Modal";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
+import { Prediction } from "./prediction";
 interface Props {
   open?: boolean;
   tournament: TournamentFixture;
@@ -19,6 +20,7 @@ interface Props {
 
 const TournamentTableRow = ({ open, tournament }: Props) => {
   const [openState, setOpenState] = useState(open);
+  const [prediction, setPrediction] = useState("");
 
   const columns: ColumnDef<TeamHistoryGame>[] = [
     {
@@ -37,20 +39,12 @@ const TournamentTableRow = ({ open, tournament }: Props) => {
       accessorKey: "goalsSecondTeam",
       header: "Goles del segundo equipo",
     },
-    {
-      accessorKey: "foulsFirstTeam",
-      header: "Faltas del primer equipo",
-    },
-    {
-      accessorKey: "foulsSecondTeam",
-      header: "Faltas del segundo equipo",
-    },
   ];
 
   const { postData } = useFetch();
   const postMutation = postData("POST /games/events/prediction");
 
-  const onSubmit = (
+  const onSubmit = async (
     amountVictoriesTeam1: number,
     amountVictoriesTeam2: number
   ) => {
@@ -58,14 +52,13 @@ const TournamentTableRow = ({ open, tournament }: Props) => {
       amountVictoriesTeam1,
       amountVictoriesTeam2,
     };
-    postMutation(
+   await postMutation(
       {
         ...form,
       },
       {
         onSuccess: (res) => {
-          console.log(res);
-          toastSuccess(res.data);
+          setPrediction(res.data);
         },
       }
     );
@@ -131,6 +124,12 @@ const TournamentTableRow = ({ open, tournament }: Props) => {
                     }
                   >
                     <div>
+                      <img
+                        src={game.firstTeam.logo}
+                        className="object-cover rounded-2xl"
+                        width={85}
+                        height={85}
+                      />
                       <h2 className="text-[22px] font-semibold">Jugadores</h2>
                       {game.firstTeam.players.map((v) => (
                         <p className="text-[13px]">
@@ -150,7 +149,14 @@ const TournamentTableRow = ({ open, tournament }: Props) => {
                           )
                         }
                       >
-                        <Icon type={ICON.ROBOT} />
+                        <Prediction
+                          amountVictories1={game.firstTeam.amountVictories}
+                          amountVictories2={game.secondTeam.amountVictories}
+                          prediction={prediction}
+                          onSubmit={onSubmit}
+                          game={game}
+                          setPrediction={setPrediction}
+                        />
                       </span>
                     </div>
 
@@ -198,6 +204,12 @@ const TournamentTableRow = ({ open, tournament }: Props) => {
                       }
                     >
                       <div>
+                        <img
+                          src={game.secondTeam.logo}
+                          className="object-cover rounded-2xl"
+                          width={85}
+                          height={85}
+                        />
                         <h2 className="text-[22px] font-semibold">Jugadores</h2>
                         {game.secondTeam.players.map((v) => (
                           <p>
@@ -206,8 +218,7 @@ const TournamentTableRow = ({ open, tournament }: Props) => {
                         ))}
                       </div>
 
-                      <div>
-                        {" "}
+                      {/*       <div className="flex gap-3">
                         <span
                           className="cursor-pointer"
                           onClick={() =>
@@ -219,7 +230,17 @@ const TournamentTableRow = ({ open, tournament }: Props) => {
                         >
                           <Icon type={ICON.ROBOT} />
                         </span>
-                      </div>
+                        <span>{loading ? "Cargando..." : prediction}</span>
+                      </div> */}
+                      <Prediction
+                        amountVictories1={game.secondTeam.amountVictories}
+                        amountVictories2={game.firstTeam.amountVictories}
+  
+                        prediction={prediction}
+                        onSubmit={onSubmit}
+                        game={game}
+                        setPrediction={setPrediction}
+                      />
 
                       <div>
                         <DataTable
