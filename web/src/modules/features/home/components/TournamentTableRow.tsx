@@ -1,7 +1,10 @@
-import Icon from "@/modules/core/components/icons/Icon";
+import Icon, { ICON } from "@/modules/core/components/icons/Icon";
 import clsx from "clsx";
 import { useState } from "react";
-import { TeamHistoryGame, TournamentFixture } from "../../tournament/api/responses";
+import {
+  TeamHistoryGame,
+  TournamentFixture,
+} from "../../tournament/api/responses";
 import DefaulShield from "@/assets/defaultshield.png";
 
 import useFetch from "@/modules/core/hooks/useFetch";
@@ -61,7 +64,8 @@ const TournamentTableRow = ({ open, tournament }: Props) => {
       },
       {
         onSuccess: (res) => {
-          toastSuccess(res.message);
+          console.log(res);
+          toastSuccess(res.data);
         },
       }
     );
@@ -102,9 +106,8 @@ const TournamentTableRow = ({ open, tournament }: Props) => {
       >
         <div className="overflow-hidden">
           <header className="h-10 flex justify-between px-10 items-center">
-            <div className="flex gap-3">
+            <div className="flex gap-3 items-center">
               <p className="text-sm opacity-80">Partido</p>
-              <span onClick={()=>onSubmit(10,20)}>BOT</span>
             </div>
 
             <p className="opacity-80 flex items-center gap-2 text-xs">
@@ -118,7 +121,7 @@ const TournamentTableRow = ({ open, tournament }: Props) => {
             {tournament.games.map((game) => (
               <div className="flex items-center gap-8 py-3 justify-center">
                 <div className="w-56 flex items-center gap-4">
-                    <Modal
+                  <Modal
                     title={"Informacion del equipo " + game.firstTeam.name}
                     description="Informacion de los integrantes y historial de los ultimos 5 partidos"
                     button={
@@ -135,15 +138,31 @@ const TournamentTableRow = ({ open, tournament }: Props) => {
                         </p>
                       ))}
                     </div>
+
+                    <div>
+                      {" "}
+                      <span
+                        className="cursor-pointer"
+                        onClick={() =>
+                          onSubmit(
+                            game.firstTeam.amountVictories,
+                            game.secondTeam.amountVictories
+                          )
+                        }
+                      >
+                        <Icon type={ICON.ROBOT} />
+                      </span>
+                    </div>
+
                     <div>
                       <DataTable
                         columns={columns}
                         data={game.firstTeam.history}
                       />
                     </div>
-                  </Modal>  
-              
-                     <div className="bg-gray-800 px-2 py-2 min-w-16 max-w-16 aspect-square rounded-xl">
+                  </Modal>
+
+                  <div className="bg-gray-800 px-2 py-2 min-w-16 max-w-16 aspect-square rounded-xl">
                     <img
                       src={game.firstTeam.logo || DefaulShield}
                       className="w-full h-full object-contain"
@@ -169,7 +188,7 @@ const TournamentTableRow = ({ open, tournament }: Props) => {
                     />
                   </div>
                   <span className="cursor-pointer">
-                          <Modal
+                    <Modal
                       title={"Informacion del equipo " + game.secondTeam.name}
                       description="Informacion de los integrantes y historial de los ultimos 5 partidos"
                       button={
@@ -186,13 +205,29 @@ const TournamentTableRow = ({ open, tournament }: Props) => {
                           </p>
                         ))}
                       </div>
+
+                      <div>
+                        {" "}
+                        <span
+                          className="cursor-pointer"
+                          onClick={() =>
+                            onSubmit(
+                              game.firstTeam.amountVictories,
+                              game.secondTeam.amountVictories
+                            )
+                          }
+                        >
+                          <Icon type={ICON.ROBOT} />
+                        </span>
+                      </div>
+
                       <div>
                         <DataTable
                           columns={columns}
                           data={game.secondTeam.history}
                         />
                       </div>
-                    </Modal> 
+                    </Modal>
                   </span>
                 </div>
               </div>
