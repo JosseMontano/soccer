@@ -49,7 +49,8 @@ const ClubForm = ({ closeModal, setData, club }: Props) => {
           onSuccess: (res) => {
             toastSuccess(res.message);
             closeModal();
-            setData((prev) => [...prev, res.data]);
+            //@ts-ignore
+            setData((prev) => [...prev, res.data.club]);
           },
         }
       );
