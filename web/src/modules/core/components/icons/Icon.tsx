@@ -10,6 +10,8 @@ import IconTrophy from "./tabler/iconTrophy";
 import IconX from "./tabler/iconX";
 import IconInfo from "./tabler/iconInfo"
 import { IconRobot } from "./tabler/iconRobot";
+import IconUser from "./tabler/iconUser"
+import IconLogout from "./tabler/iconLogout"
 
 export enum ICON {
   CHECK = "check",
@@ -23,7 +25,9 @@ export enum ICON {
   TROPHY = "trophy",
   CHEVRON_DOWN = "chevron_down",
   INFO ="info",
-  ROBOT="IconRobot"
+  ROBOT="IconRobot",
+  USER="IconUser",
+  LOGOUT="IconLogout"
 }
 
 interface Props {
@@ -43,7 +47,9 @@ const Icon = ({ type }: Props) => {
     [ICON.TROPHY]: <IconTrophy />,
     [ICON.CHEVRON_DOWN]: <IconChevronDown />,
     [ICON.INFO]: <IconInfo />,
-    [ICON.ROBOT]: <IconRobot />
+    [ICON.ROBOT]: <IconRobot />,
+    [ICON.USER]: <IconUser />,
+    [ICON.LOGOUT]: <IconLogout />
   };
   return icons[type];
 };

@@ -106,6 +106,7 @@ const useFetch = () => {
   };
 
   //* FETCHING IN CODE
+
   const postData = <K extends keyof EndpointMap>(
     endpointConfig: K,
     config: RequestInit = {}
@@ -114,21 +115,20 @@ const useFetch = () => {
     type TBody = EndpointMap[K]["request"];
     type TParams = EndpointMap[K]["params"];
     const paramsLocalStorageKey = "useFetchRequestParams";
-
+  
     const endpoint: string = Array.isArray(endpointConfig)
       ? endpointConfig[0]
       : endpointConfig;
     const [method] = endpoint.split(" ") as [HttpMethod, string];
-
+  
     const mutation = useMutation<ApiSuccessResponse<TResponse>, Error, TBody>({
       mutationFn: async (payload: TBody) => {
-        const parameters = JSON.parse(
-          sessionStorage.getItem(paramsLocalStorageKey) || "{}"
-        );
+        const parametersString = await AsyncStorage.getItem(paramsLocalStorageKey);
+        const parameters = JSON.parse(parametersString || "{}");
         const urlBuild = buildUrl(endpoint, parameters);
-        sessionStorage.removeItem(paramsLocalStorageKey);
-
-        const token = localStorage.getItem(TOKEN_NAME);
+        await AsyncStorage.removeItem(paramsLocalStorageKey);
+  
+        const token = await AsyncStorage.getItem(TOKEN_NAME);
         const response = await fetch(API_URL + urlBuild, {
           method: method,
           body:
@@ -149,12 +149,12 @@ const useFetch = () => {
         toastError(error.message);
       },
     });
-
+  
     interface CustomMutationOptions<T1, T2, T3, T4>
       extends MutateOptions<T1, T2, T3, T4> {
       params?: TParams extends never ? void : TParams;
     }
-
+  
     const customMutation = (
       variables: TBody,
       options?: CustomMutationOptions<
@@ -165,16 +165,14 @@ const useFetch = () => {
       >
     ) => {
       if (options?.params) {
-        sessionStorage.setItem(
-          paramsLocalStorageKey,
-          JSON.stringify(options.params)
-        );
+        AsyncStorage.setItem(paramsLocalStorageKey, JSON.stringify(options.params));
       }
       mutation.mutate(variables, options);
     };
-
+  
     return customMutation;
   };
+  
 
   return { fetchData, postData };
 };

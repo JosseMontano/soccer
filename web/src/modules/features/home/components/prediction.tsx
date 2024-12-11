@@ -1,5 +1,5 @@
 import Icon, { ICON } from "@/modules/core/components/icons/Icon";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 type ParamsType = {
   amountVictories1: number;
