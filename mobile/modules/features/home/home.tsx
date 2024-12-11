@@ -77,7 +77,7 @@ export const Home = () => {
   
 
   return (
-    <ScrollView style={{ flex: 1 }}>
+    <ScrollView style={{ flex: 1, backgroundColor:secondaryColor }}>
       <View style={styles.container}>
         <Header />
         <View style={styles.containerHeader}>
@@ -197,7 +197,8 @@ const styles = StyleSheet.create({
     height: "auto",
   },
   table: {
-    //overflow: "hidden", // Ensures the content hides during animation
+    overflow: "hidden", // Ensures the content hides during animation
+    backgroundColor: tertiaryColor,
   },
   infoContainer: {
     paddingHorizontal: 10,
@@ -222,7 +223,7 @@ const styles = StyleSheet.create({
   logoTeam: {
     width: 22,
     height: 22,
-    objectFit:"cover"
+    objectFit:"contain"
   },
   gameText: {
     color: "#fff",
