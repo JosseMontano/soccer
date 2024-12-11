@@ -3,6 +3,9 @@ import { NavLink, Outlet } from "react-router-dom";
 import Icon from "../core/components/icons/Icon";
 import { motion } from "framer-motion";
 import useUserStore from "../core/store/userStore";
+import Modal from "../core/components/ui/Modal";
+import LoginPage from "../features/login/pages/LoginPage";
+import { toastConfirm, toastSuccess } from "../core/utils/toast";
 
 const DATA = [
   {
@@ -32,10 +35,17 @@ const DATA = [
 ];
 
 const Dashboard = () => {
-  const { user } = useUserStore();
+  const { user, logout } = useUserStore();
   const MotionLink = motion(NavLink, {
     forwardMotionProps: true,
   });
+
+  const handlelogout = () => {
+    toastConfirm("¿Quieres cerrar sesion?", () => {
+      logout()
+      toastSuccess("Se cerro sesion");
+    });
+  };
 
   return (
     <div className="w-screen h-[100svh] flex flex-col">
@@ -74,9 +84,29 @@ const Dashboard = () => {
             )
           )}
         </div>
-        <div className="flex flex-col gap-6">
+
+        <div className="flex flex-row items-center gap-6">
+          <div>{user && user?.email}</div>
           <button className="p-2 w-10 aspect-square text-skyblue-400">
-            <Icon type={Icon.Types.SETTINGS} />
+            {!user && (
+              <Modal
+                title={"Inicia sesion"}
+                description="Para poder crear y alterar datos necesitas estar logueado"
+                button={
+                  <span className="cursor-pointer">
+                    <Icon type={Icon.Types.USER} />
+                  </span>
+                }
+              >
+                <LoginPage />
+              </Modal>
+            )}
+
+            {user && (
+              <span className="cursor-pointer" onClick={handlelogout}>
+                <Icon type={Icon.Types.LOGOUT} />
+              </span>
+            )}
           </button>
         </div>
       </aside>

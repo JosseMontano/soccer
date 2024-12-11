@@ -1,6 +1,6 @@
-import Icon, { ICON } from "@/modules/core/components/icons/Icon";
+import Icon from "@/modules/core/components/icons/Icon";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import {
   TeamHistoryGame,
   TournamentFixture,
@@ -8,7 +8,6 @@ import {
 import DefaulShield from "@/assets/defaultshield.png";
 
 import useFetch from "@/modules/core/hooks/useFetch";
-import { toastSuccess } from "@/modules/core/utils/toast";
 import Modal from "@/modules/core/components/ui/Modal";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
