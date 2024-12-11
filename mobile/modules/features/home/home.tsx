@@ -14,12 +14,13 @@ import {
   tertiaryColor,
 } from "../../core/constant/color";
 import { Header } from "./components/header";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useFetch from "../../core/hooks/useFetch";
 import { ModalComp } from "../../core/components/modal";
-import { Game } from "./api/responses";
+import { Game, TournamentFixture } from "./api/responses";
 import { ExtraInfo } from "./components/extraInfo";
 import Icon from 'react-native-vector-icons/AntDesign';
+import { channel } from "../../core/libs/pusher";
 
 //caretdown caretup
 type AccordionState = {
@@ -29,12 +30,62 @@ type AccordionState = {
 
 export const Home = () => {
   const { fetchData, postData } = useFetch();
-  const { data: tournament } = fetchData("GET /tournaments/tournamentsPublic");
+  const { data } = fetchData("GET /tournaments/tournamentsPublic?date=2024-10-15" as any);
 
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<"firstTeam" | "secondTeam">(
     "firstTeam"
   );
+
+  const [tournament, setTournament] = useState<TournamentFixture[]>([]);
+
+  useEffect(() => {
+    if (data) {
+      setTournament(data);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    const eventName = "new-goal";
+    channel.bind(
+      eventName,
+      (res: {
+        tournamentId: string;
+        gameId: string;
+        team: "firstTeam" | "secondTeam";
+        action: "increment" | "decrement";
+        newGoals: number;
+      }) => {
+        setTournament((prev) => {
+          return prev.map((t) => {
+            if (t.id === res.tournamentId) {
+              return {
+                ...t,
+                games: t.games.map((g) => {
+                  if (g.id === res.gameId) {
+                    return {
+                      ...g,
+                      goalsFirstTeam:
+                        res.team === "firstTeam"
+                          ? res.newGoals
+                          : g.goalsFirstTeam,
+                      goalsSecondTeam:
+                        res.team === "secondTeam"
+                          ? res.newGoals
+                          : g.goalsSecondTeam,
+                    };
+                  }
+                  return g;
+                }),
+              };
+            }
+            return t;
+          });
+        });
+      }
+    );
+  }, []);
+
 
   const postMutation = postData("POST /games/events/prediction");
   const [prediction, setPrediction] = useState("");
