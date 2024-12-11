@@ -4,21 +4,31 @@ import clsx from "clsx";
 import { useState } from "react";
 import {
   TeamHistoryGame,
+  Tournament,
   TournamentFixture,
 } from "../../tournament/api/responses";
 
 import { DataTable } from "@/components/ui/data-table";
 import Modal from "@/modules/core/components/ui/Modal";
-import useFetch from "@/modules/core/hooks/useFetch";
+import useFetch, { SetData } from "@/modules/core/hooks/useFetch";
 import { ColumnDef } from "@tanstack/react-table";
 import { Prediction } from "./prediction";
+import { toastError, toastSuccess } from "@/modules/core/utils/toast";
 interface Props {
   open?: boolean;
   showInfo?: boolean;
+  editable?: boolean;
   tournament: TournamentFixture;
+  setData?: SetData<Tournament[]>;
 }
 
-const TournamentTableRow = ({ open, tournament, showInfo = true }: Props) => {
+const TournamentTableRow = ({
+  open,
+  tournament,
+  showInfo = true,
+  editable = false,
+  setData,
+}: Props) => {
   const [openState, setOpenState] = useState(open);
   const [prediction, setPrediction] = useState("");
 
@@ -59,6 +69,44 @@ const TournamentTableRow = ({ open, tournament, showInfo = true }: Props) => {
       {
         onSuccess: (res) => {
           setPrediction(res.data);
+        },
+      }
+    );
+  };
+
+  const goalMutation = postData("PUT /games/events/:gameId/goals");
+  const handleGameGoal = (
+    gameId: string,
+    team: "firstTeam" | "secondTeam",
+    action: "increment" | "decrement",
+    actualGoals: number
+  ) => {
+    if (action === "decrement" && actualGoals === 0) {
+      return toastError("No puede haber goles negativos");
+    }
+    goalMutation(
+      {
+        action,
+        team,
+      },
+      {
+        params: {
+          gameId,
+        },
+        onSuccess: (res) => {
+          toastSuccess(res.message);
+          setData?.((prev) =>
+            prev.map((t) => {
+              return t.id === tournament.id
+                ? {
+                    ...t,
+                    games: t.games.map((g) => {
+                      return g.id === gameId ? (res.data as any) : g;
+                    }),
+                  }
+                : t;
+            })
+          );
         },
       }
     );
@@ -180,11 +228,59 @@ const TournamentTableRow = ({ open, tournament, showInfo = true }: Props) => {
                     {game.firstTeam.name}
                   </p>
                 </div>
-                <span>{game.goalsFirstTeam}</span>
+
+                <div className="flex flex-col items-center">
+                  <span>{game.goalsFirstTeam}</span>
+                  {editable && (
+                    <>
+                      <button
+                        onClick={() =>
+                          handleGameGoal(game.id, "firstTeam", "increment", game.goalsFirstTeam)
+                        }
+                        className="text-xs"
+                      >
+                        Aumentar
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleGameGoal(game.id, "firstTeam", "decrement", game.goalsFirstTeam)
+                        }
+                        className="text-xs"
+                      >
+                        Disminuir
+                      </button>
+                    </>
+                  )}
+                </div>
+
                 <div className="bg-gray-800 px-2 py-2 w-10 aspect-square rounded-full flex items-center justify-center">
                   VS
                 </div>
-                <span>{game.goalsSecondTeam}</span>
+
+                <div className="flex flex-col items-center">
+                  <span>{game.goalsSecondTeam}</span>
+                  {editable && (
+                    <>
+                      <button
+                        onClick={() =>
+                          handleGameGoal(game.id, "secondTeam", "increment", game.goalsSecondTeam)
+                        }
+                        className="text-xs"
+                      >
+                        Aumentar
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleGameGoal(game.id, "secondTeam", "decrement", game.goalsSecondTeam)
+                        }
+                        className="text-xs"
+                      >
+                        Disminuir
+                      </button>
+                    </>
+                  )}
+                </div>
+
                 <div className="w-56 flex items-center gap-4 justify-end">
                   <p className="flex-1 text-end whitespace-nowrap overflow-hidden text-ellipsis">
                     {game.secondTeam.name}
@@ -224,20 +320,6 @@ const TournamentTableRow = ({ open, tournament, showInfo = true }: Props) => {
                           ))}
                         </div>
 
-                        {/*       <div className="flex gap-3">
-                        <span
-                          className="cursor-pointer"
-                          onClick={() =>
-                            onSubmit(
-                              game.firstTeam.amountVictories,
-                              game.secondTeam.amountVictories
-                            )
-                          }
-                        >
-                          <Icon type={ICON.ROBOT} />
-                        </span>
-                        <span>{loading ? "Cargando..." : prediction}</span>
-                      </div> */}
                         <Prediction
                           amountVictories1={game.secondTeam.amountVictories}
                           amountVictories2={game.firstTeam.amountVictories}

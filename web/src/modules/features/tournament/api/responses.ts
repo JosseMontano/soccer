@@ -1,6 +1,6 @@
 import { Player } from "../../players/api/responses";
 
-interface Team {
+export interface Team {
   id: string;
   name: string;
   logo: string;

@@ -31,5 +31,13 @@ declare global {
       request: null;
       response: Game;
     };
+    "PUT /games/events/:gameId/goals": {
+      params: { gameId: string };
+      request: {
+        team: "firstTeam" | "secondTeam";
+        action: "increment" | "decrement";
+      };
+      response: Game;
+    }
   }
 }

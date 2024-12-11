@@ -54,11 +54,23 @@ export function tournamentRoutes(router: FastifyInstance) {
   router.get(
     `${endPointTournaments}/tournamentsPublic`,
     async (request, reply) => {
+      const { date } = request.query as { date: string };
+      const selectedDate = date ? new Date(date) : new Date(); // Crear un rango para la fecha seleccionada
+      const startOfDay = new Date(selectedDate);
+      startOfDay.setHours(0, 0, 0, 0); // Inicio del día
+      const endOfDay = new Date(selectedDate);
+      endOfDay.setHours(23, 59, 59, 999); // Fin del día
+
       try {
         const tournaments = await prisma.tournaments.findMany({
           where: {
             games: {
-              some: {}, // Ensures tournaments with at least one game are fetched
+              some: {
+                date: {
+                  gte: startOfDay, // Mayor o igual al inicio del día
+                  lt: endOfDay, // Menor al fin del día
+                },
+              },
             },
           },
           include: {
@@ -66,6 +78,12 @@ export function tournamentRoutes(router: FastifyInstance) {
             finalFormat: true,
             category: true,
             games: {
+              where: {
+                date: {
+                  gte: startOfDay, // Mayor o igual al inicio del día
+                  lt: endOfDay, // Menor al fin del día
+                },
+              },
               include: {
                 firstTeam: {
                   include: {
@@ -443,7 +461,7 @@ export function tournamentRoutes(router: FastifyInstance) {
 
         const tournamentRes = await prisma.tournaments.findUnique({
           where: {
-            id
+            id,
           },
           include: {
             format: true,

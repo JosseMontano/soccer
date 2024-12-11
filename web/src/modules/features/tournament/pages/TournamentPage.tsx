@@ -30,6 +30,7 @@ const TournamentPage = () => {
       });
     });
   };
+
   const handleFitxure = (id: string) => {
     toastConfirm("¿Quieres crear el fixture para este torneo?", () => {
       generateFixtureMutation(null, {
@@ -45,6 +46,7 @@ const TournamentPage = () => {
       });
     });
   };
+
   return (
     <section className="flex-1 flex flex-col overflow-hidden p-6 gap-4">
       <div>Torneos</div>
@@ -71,7 +73,12 @@ const TournamentPage = () => {
         {data?.map((tournament) => (
           <div className="flex gap-2">
             <div className="flex-1">
-              <TournamentTableRow showInfo={false} tournament={tournament} />
+              <TournamentTableRow
+                showInfo={false}
+                tournament={tournament}
+                editable
+                setData={setData}
+              />
             </div>
             <Modal
               title="Editar Torneo"
