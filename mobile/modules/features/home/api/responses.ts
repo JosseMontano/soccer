@@ -10,7 +10,7 @@ export interface Player{
   photo: string
   clubId : string
 }
-interface Team {
+export interface Team {
   id: string;
   name: string;
   logo: string;
@@ -58,18 +58,8 @@ export interface TeamHistoryGame {
   };
 }
 
-export interface TournamentFixture {
-  id: string;
-  name: string;
-  description: string;
-  dateStart: string;
-  dateEnd: string;
-  formatId: string;
-  finalFormatId: string;
-  categoryId: string;
-  status: string;
-  fixtureGenerated: boolean;
-  games: {
+export interface Game{
+  
     id: string;
     firstTeamId: string;
     secondTeamId: string;
@@ -87,5 +77,18 @@ export interface TournamentFixture {
 
     firstTeam: Team;
     secondTeam: Team;
-  }[];
+  }
+
+export interface TournamentFixture {
+  id: string;
+  name: string;
+  description: string;
+  dateStart: string;
+  dateEnd: string;
+  formatId: string;
+  finalFormatId: string;
+  categoryId: string;
+  status: string;
+  fixtureGenerated: boolean;
+  games: Game[];
 }

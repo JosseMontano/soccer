@@ -17,6 +17,8 @@ import { Header } from "./components/header";
 import { useState, useRef } from "react";
 import useFetch from "../../core/hooks/useFetch";
 import { ModalComp } from "../../core/components/modal";
+import { Game, Tournament } from "./api/responses";
+import { ExtraInfo } from "./components/extraInfo";
 
 export const Home = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
@@ -47,8 +49,16 @@ export const Home = () => {
     setIsCollapsed(!isCollapsed);
   };
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<"firstTeam" | "secondTeam">(
+    "firstTeam"
+  );
 
-
+  const [gameSelected, setGameSelected] = useState<Game>({} as Game);
+  const selectTeam = (v: Game, team: "firstTeam" | "secondTeam") => {
+    setIsOpen(true);
+    setSelectedTeam(team);
+    setGameSelected(v);
+  };
 
   return (
     <View style={styles.container}>
@@ -79,7 +89,12 @@ export const Home = () => {
                   source={{ uri: game.firstTeam.logo }}
                 />
 
-                <Text style={styles.gameText}>{game.firstTeam.name}</Text>
+                <Text
+                  style={styles.gameText}
+                  onPress={() => selectTeam(game, "firstTeam")}
+                >
+                  {game.firstTeam.name}
+                </Text>
                 <View
                   style={{
                     flexDirection: "row",
@@ -102,7 +117,12 @@ export const Home = () => {
                   </Text>
                   <Text style={styles.gameText}>{game.goalsSecondTeam}</Text>
                 </View>
-                <Text style={styles.gameText}>{game.secondTeam.name}</Text>
+                <Text
+                  style={styles.gameText}
+                  onPress={() => selectTeam(game, "secondTeam")}
+                >
+                  {game.secondTeam.name}
+                </Text>
                 <Image
                   style={styles.logoTeam}
                   source={{ uri: game.secondTeam.logo }}
@@ -113,11 +133,11 @@ export const Home = () => {
         </View>
       ))}
 
-      <ModalComp 
+      <ModalComp
         setVisible={setIsOpen}
         visible={isOpen}
-        title="Info"
-        children={<>hello</>}
+        title="Informacion del equipo"
+        children={<ExtraInfo gameSelected={gameSelected[selectedTeam]} />}
       />
     </View>
   );

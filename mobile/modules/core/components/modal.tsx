@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View, Modal, Pressable } from "react-native";
+import { primaryColor, QuaternaryColor, secondaryColor, tertiaryColor } from "../constant/color";
 
 type ParamsType = {
   visible: boolean;
@@ -47,6 +48,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: "center",
     alignItems: "center",
+    
   },
   fullScreenPressable: {
     position: "absolute",
@@ -57,7 +59,7 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    backgroundColor: "white",
+    backgroundColor: QuaternaryColor,
     width:"80%",
     borderRadius: 20,
     padding: 10,
@@ -86,5 +88,7 @@ const styles = StyleSheet.create({
   },
   modalText: {
     marginBottom: 15,
+    color:"white",
+    fontSize:18
   },
 });
