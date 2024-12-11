@@ -49,7 +49,7 @@ const ClubForm = ({ closeModal, setData, club }: Props) => {
           onSuccess: (res) => {
             toastSuccess(res.message);
             closeModal();
-            //@ts-ignore
+            //@ts-expect-error the back is returning other property
             setData((prev) => [...prev, res.data.club]);
           },
         }
