@@ -71,6 +71,11 @@ export const Home = () => {
     }).start();
   };
 
+  const truncateText = (text: string, limit: number) => {
+    return text.length > limit ? text.slice(0, limit) + "..." : text;
+  };
+  
+
   return (
     <ScrollView style={{ flex: 1 }}>
       <View style={styles.container}>
@@ -107,7 +112,7 @@ export const Home = () => {
                       style={styles.gameText}
                       onPress={() => selectTeam(game, "firstTeam")}
                     >
-                      {game.firstTeam.name}
+                      {truncateText(game.firstTeam.name, 8)}
                     </Text>
                     <View
                       style={{
@@ -137,7 +142,7 @@ export const Home = () => {
                       style={styles.gameText}
                       onPress={() => selectTeam(game, "secondTeam")}
                     >
-                      {game.secondTeam.name}
+                      {truncateText(game.secondTeam.name, 8)}
                     </Text>
                     <Image
                       style={styles.logoTeam}
@@ -215,8 +220,9 @@ const styles = StyleSheet.create({
     borderBottomColor: "rgba(155, 155, 155,.3)",
   },
   logoTeam: {
-    width: 40,
-    height: 40,
+    width: 22,
+    height: 22,
+    objectFit:"cover"
   },
   gameText: {
     color: "#fff",
