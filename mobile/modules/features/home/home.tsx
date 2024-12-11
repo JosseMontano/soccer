@@ -13,6 +13,7 @@ import {
   } from "../../core/constant/color";
   import { Header } from "./components/header";
   import { useState, useRef } from "react";
+import useFetch from "../../core/hooks/useFetch";
   
   type Game = {
     id: string;
@@ -29,6 +30,10 @@ import {
   export const Home = () => {
     const [isCollapsed, setIsCollapsed] = useState(true);
     const animatedHeight = useRef(new Animated.Value(0)).current;
+
+    const { fetchData } = useFetch();
+    const { data: clubs } = fetchData("GET /clubs");
+    console.log(clubs);
   
     const toggleCollapse = () => {
       if (isCollapsed) {
