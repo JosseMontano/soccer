@@ -1,27 +1,12 @@
-import { Club, Clubget } from "./responses";
+import { TournamentFixture } from "./responses";
+
 
 declare global {
   interface EndpointMap {
-    "GET /clubs": {
+    "GET /tournaments/tournamentsPublic": {
       params: never;
       request: never;
-      response: Club[];
-    };
-    "GET /clubs/select": {
-      params: never;
-      request: never;
-      response: Clubget[];
-    };
-
-    "GET /clubs/category/:idCategory": {
-      params: { idCategory: string };
-      request: never;
-      response: Club[];
-    };
-    "DELETE /clubs/:id": {
-      params: { id: string };
-      request: null;
-      response: Club;
+      response: TournamentFixture[];
     };
   }
 }
