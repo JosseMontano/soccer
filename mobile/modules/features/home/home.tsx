@@ -6,6 +6,7 @@ import {
   Animated,
   Easing,
   Image,
+  Pressable,
 } from "react-native";
 import {
   primaryColor,
@@ -15,6 +16,7 @@ import {
 import { Header } from "./components/header";
 import { useState, useRef } from "react";
 import useFetch from "../../core/hooks/useFetch";
+import { ModalComp } from "../../core/components/modal";
 
 export const Home = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
@@ -44,6 +46,9 @@ export const Home = () => {
     }
     setIsCollapsed(!isCollapsed);
   };
+  const [isOpen, setIsOpen] = useState(false);
+
+
 
   return (
     <View style={styles.container}>
@@ -107,6 +112,13 @@ export const Home = () => {
           </Animated.View>
         </View>
       ))}
+
+      <ModalComp 
+        setVisible={setIsOpen}
+        visible={isOpen}
+        title="Info"
+        children={<>hello</>}
+      />
     </View>
   );
 };
