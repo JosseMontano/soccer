@@ -24,41 +24,7 @@ export type User = {
 const JWT_SECRET = "your-secret-key"
 
 export function usersRoutes(router: FastifyInstance) {
-    router.get(endPoint + "/seed", async (_, reply) => {
-        try {
-            const roles = [
-                { id: "1", name: "superAdmin" },
-                { id: "2", name: "admin" },
-                { id: "3", name: "manager" },
-                { id: "4", name: "user" },
-            ]
-            for (const v of roles) {
-                await prisma.roles.create({
-                    data: {
-                        id: v.id,
-                        name: v.name
-                    }
-                })
-            }
-            const hashedPassword = await bcrypt.hash("123456", 10)
-            await prisma.users.create({
-                data: {
-                    email: "superadmin@gmail.com",
-                    password: hashedPassword,
-                    roleId: roles[0].id,
-                }
-            })
-
-            return reply.status(200).send({ "message": "Semilla de Roles creada exitosamente." });
-        } catch (error) {
-            if (error instanceof Error)
-                return reply
-                    .status(500)
-                    .send({ message: "Server error " + error.message });
-        }
-    });
-
-
+  
     router.post(endPoint + "/create-admin", async (request, reply) => {
         try {
             const token = request.headers["authorization"];

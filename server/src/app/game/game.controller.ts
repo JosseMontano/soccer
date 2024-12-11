@@ -114,12 +114,13 @@ export function gameRoutes(router: FastifyInstance) {
       // Validate input
       if (amountVictoriesTeam1 === undefined || amountVictoriesTeam2 === undefined) {
         return reply.status(400).send({
-          message: "Both amountVictoriesTeam1 and amountVictoriesTeam2 are required.",
+          message: "Tanto amountVictoriesTeam1 y amountVictoriesTeam2 son requeridos",
         });
       }
 
+
       // Send data to the prediction API
-      const response = await fetch("http://localhost:5000/api/prediction", {
+      const response = await fetch("http://0.0.0.0:9000/api/prediction", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -136,11 +137,11 @@ export function gameRoutes(router: FastifyInstance) {
 
       // Handle errors from the external API
       if (!response.ok) {
-        return reply.status(response.status).send({
-          message: "Failed to fetch prediction.",
-          error: result,
-        });
+        const errorBody = await response.text();
+        console.error("Error body:", errorBody);
+        return reply.status(response.status).send({ message: errorBody });
       }
+    
 
       // Send the result back to the client
       return reply.status(200).send({

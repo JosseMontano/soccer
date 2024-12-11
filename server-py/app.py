@@ -21,6 +21,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+""" app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Acepta solicitudes desde cualquier origen
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite cualquier método HTTP
+    allow_headers=["*"],  # Permite cualquier cabecera
+)
+ """
 class PredictionRequest(BaseModel):
     amountVictoriesTeam1: int
     amountVictoriesTeam2: float
@@ -59,6 +67,7 @@ async def seed():
 
 @app.post('/api/prediction')
 def preditcion(request: PredictionRequest):
+    print('come')
     # Carga y preprocesa tus datos
     data = pd.read_csv('historical_matches.csv')  # Dataset de partidos históricos
     X = data[['home_goals', 'away_goals']]   # Variables de entrada (estadísticas)
