@@ -6,7 +6,6 @@ import {
   Animated,
   Easing,
   Image,
-  Pressable,
   ScrollView,
 } from "react-native";
 import {
@@ -15,10 +14,10 @@ import {
   tertiaryColor,
 } from "../../core/constant/color";
 import { Header } from "./components/header";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import useFetch from "../../core/hooks/useFetch";
 import { ModalComp } from "../../core/components/modal";
-import { Game, Tournament } from "./api/responses";
+import { Game } from "./api/responses";
 import { ExtraInfo } from "./components/extraInfo";
 
 type AccordionState = {
@@ -27,10 +26,7 @@ type AccordionState = {
 };
 
 export const Home = () => {
-  const [isCollapsed, setIsCollapsed] = useState(true);
-  const animatedHeight = useRef(new Animated.Value(0)).current;
-
-  const { fetchData } = useFetch();
+  const { fetchData, postData } = useFetch();
   const { data: tournament } = fetchData("GET /tournaments/tournamentsPublic");
 
   const [isOpen, setIsOpen] = useState(false);
@@ -38,11 +34,34 @@ export const Home = () => {
     "firstTeam"
   );
 
+  const postMutation = postData("POST /games/events/prediction");
+  const [prediction, setPrediction] = useState("");
+  const onSubmit = async (
+    amountVictoriesTeam1: number,
+    amountVictoriesTeam2: number
+  ) => {
+    const form = {
+      amountVictoriesTeam1,
+      amountVictoriesTeam2,
+    };
+    await postMutation(
+      {
+        ...form,
+      },
+      {
+        onSuccess: (res) => {
+          setPrediction(res.data);
+        },
+      }
+    );
+  };
+
   const [gameSelected, setGameSelected] = useState<Game>({} as Game);
-  const selectTeam = (v: Game, team: "firstTeam" | "secondTeam") => {
+  const selectTeam = async (v: Game, team: "firstTeam" | "secondTeam") => {
     setIsOpen(true);
     setSelectedTeam(team);
     setGameSelected(v);
+    await onSubmit(v.firstTeam.amountVictories, v.secondTeam.amountVictories);
   };
 
   const [accordions, setAccordions] = useState<Record<string, AccordionState>>(
@@ -74,10 +93,9 @@ export const Home = () => {
   const truncateText = (text: string, limit: number) => {
     return text.length > limit ? text.slice(0, limit) + "..." : text;
   };
-  
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor:secondaryColor }}>
+    <ScrollView style={{ flex: 1, backgroundColor: secondaryColor }}>
       <View style={styles.container}>
         <Header />
         <View style={styles.containerHeader}>
@@ -110,7 +128,9 @@ export const Home = () => {
                     />
                     <Text
                       style={styles.gameText}
-                      onPress={() => selectTeam(game, "firstTeam")}
+                      onPress={() => {
+                        selectTeam(game, "firstTeam");
+                      }}
                     >
                       {truncateText(game.firstTeam.name, 8)}
                     </Text>
@@ -159,7 +179,14 @@ export const Home = () => {
           setVisible={setIsOpen}
           visible={isOpen}
           title="Informacion del equipo"
-          children={<ExtraInfo gameSelected={gameSelected[selectedTeam]} />}
+          children={
+            <ExtraInfo
+              gameSelected={gameSelected[selectedTeam]}
+              onSubmit={onSubmit}
+              prediction={prediction}
+              setPrediction={setPrediction}
+            />
+          }
         />
       </View>
     </ScrollView>
@@ -223,7 +250,7 @@ const styles = StyleSheet.create({
   logoTeam: {
     width: 22,
     height: 22,
-    objectFit:"contain"
+    objectFit: "contain",
   },
   gameText: {
     color: "#fff",

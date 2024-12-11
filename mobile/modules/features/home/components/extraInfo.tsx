@@ -1,9 +1,20 @@
 import { StyleSheet, Text, View, Image, FlatList } from "react-native";
 import { Game, Team, TeamHistoryGame } from "../api/responses";
+import { useEffect, useState } from "react";
+import useFetch from "../../../core/hooks/useFetch";
 type ParamsType = {
   gameSelected: Team | undefined;
+  onSubmit: (v1: number, v2: number) => Promise<void>
+  setPrediction: (val:string)=>void;
+  prediction:string
 };
-export const ExtraInfo = ({ gameSelected }: ParamsType) => {
+export const ExtraInfo = ({ gameSelected, onSubmit, prediction, setPrediction }: ParamsType) => {
+  useEffect(() => {
+    const handleLoad = async()=>{
+     setPrediction("")
+    }
+    handleLoad()
+   }, [gameSelected]);
 
     const renderRow = ({ item }: { item: TeamHistoryGame }) => (
         <View style={styles.row}>
@@ -30,6 +41,10 @@ export const ExtraInfo = ({ gameSelected }: ParamsType) => {
             </Text>
           ))}
         </View>
+      </View>
+
+      <View>
+        <Text style={{color:"#fff"}}>{prediction == "" ? "Cargando..." : prediction}</Text>
       </View>
 
       <View>
