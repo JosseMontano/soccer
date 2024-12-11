@@ -121,17 +121,22 @@ const useFetch = () => {
         sessionStorage.removeItem(paramsLocalStorageKey);
 
         const token = localStorage.getItem(TOKEN_NAME);
+
+        let objHeaders: Record<string, any> = {
+          Authorization: `Bearer ${token}`,
+          ...config.headers,
+        }
+        if(method !== "GET" && method !== "DELETE") {
+          objHeaders["Content-Type"] = "application/json"
+        }
+
         const response = await fetch(API_URL + urlBuild, {
           method: method,
           body:
             method === "GET" || method === "DELETE"
               ? undefined
               : JSON.stringify(payload),
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            ...config.headers,
-          },
+          headers:objHeaders,
           ...config,
         });
         return handleResponse<ApiSuccessResponse<TResponse>>(response);

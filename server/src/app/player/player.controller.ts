@@ -170,7 +170,48 @@ export function playerRoutes(router: FastifyInstance) {
       const data = request.body as PlayerDTO;
       playerSchema.parse(data);
 
+      // Calculate the player's age
       const age = calculateAge(data.birthdate);
+
+      // Get the club's category
+      const clubCategory = await prisma.clubCategories.findFirst({
+        where: { clubId: data.clubId },
+        include: {
+          category: {
+            include: {
+              typeCategory: true,
+            },
+          },
+        },
+      });
+
+      if (!clubCategory) {
+        return reply.status(400).send({
+          message: "El club no tiene una categoría asociada.",
+        });
+      }
+
+      const { minAge, maxAge, typeCategory } = clubCategory.category;
+
+      // Validate player's age
+      if (age < minAge || age > maxAge) {
+        return reply.status(400).send({
+          message: `La edad del jugador debe estar entre ${minAge} y ${maxAge} para el club.`,
+        });
+      }
+
+      // Validate player's gender
+      if (typeCategory.name.toLowerCase().includes("promocionales")) {
+        const isMale = typeCategory.name.toLowerCase().includes("varones");
+        if (
+          (isMale && data.gender !== "male") ||
+          (!isMale && data.gender !== "female")
+        ) {
+          return reply.status(400).send({
+            message: `El género del jugador no coincide con la categoría del club (${typeCategory.name}).`,
+          });
+        }
+      }
 
       const updatedPlayer = await prisma.player.update({
         where: { id: id },
@@ -182,6 +223,9 @@ export function playerRoutes(router: FastifyInstance) {
           photo: data.photo,
           clubId: data.clubId,
           commet: data.commet,
+        },
+        include: {
+          club: true,
         },
       });
 

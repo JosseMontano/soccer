@@ -21,7 +21,7 @@ declare global {
     "POST /tournaments/:id/generate-fixture": {
       params: { id: string };
       request: null;
-      response: {count:number};
+      response: Tournament;
     };
     "PUT /tournaments/:id": {
       params: { id: string };
