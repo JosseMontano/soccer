@@ -19,7 +19,9 @@ import useFetch from "../../core/hooks/useFetch";
 import { ModalComp } from "../../core/components/modal";
 import { Game } from "./api/responses";
 import { ExtraInfo } from "./components/extraInfo";
+import Icon from 'react-native-vector-icons/AntDesign';
 
+//caretdown caretup
 type AccordionState = {
   isCollapsed: boolean;
   animatedHeight: Animated.Value;
@@ -90,8 +92,8 @@ export const Home = () => {
     }).start();
   };
 
-  const truncateText = (text: string, limit: number) => {
-    return text.length > limit ? text.slice(0, limit) + "..." : text;
+  const truncateText = (text: string) => {
+    return text.length > 4 ? text.slice(0, 5) + "..." : text;
   };
 
   return (
@@ -112,7 +114,7 @@ export const Home = () => {
                 <Text style={styles.title}>{v.name}</Text>
                 <TouchableOpacity onPress={() => toggleCollapse(v.id)}>
                   <Text style={styles.collapseText}>
-                    {isCollapsed ? "Abrir" : "Cerrar"}
+                    {isCollapsed ? <Icon name="caretdown" size={15}/> :  <Icon name="caretup" size={15}/>}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -132,7 +134,7 @@ export const Home = () => {
                         selectTeam(game, "firstTeam");
                       }}
                     >
-                      {truncateText(game.firstTeam.name, 8)}
+                      {truncateText(game.firstTeam.name)}
                     </Text>
                     <View
                       style={{
@@ -162,7 +164,7 @@ export const Home = () => {
                       style={styles.gameText}
                       onPress={() => selectTeam(game, "secondTeam")}
                     >
-                      {truncateText(game.secondTeam.name, 8)}
+                      {truncateText(game.secondTeam.name)}
                     </Text>
                     <Image
                       style={styles.logoTeam}
@@ -218,7 +220,8 @@ const styles = StyleSheet.create({
     backgroundColor: tertiaryColor,
     marginHorizontal: 12,
     borderRadius: 6,
-    padding: 10,
+    paddingHorizontal: 10,
+    paddingVertical:5,
     flexDirection: "column",
     gap: 10,
     height: "auto",
@@ -231,6 +234,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems:"center"
   },
   titleTable: {
     color: "#fff",
