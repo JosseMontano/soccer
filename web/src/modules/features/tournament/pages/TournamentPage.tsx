@@ -5,12 +5,15 @@ import { toastConfirm, toastSuccess } from "@/modules/core/utils/toast";
 import { useState } from "react";
 import { Tournament } from "../api/responses";
 import TournamentForm from "../components/tournamentForm";
+import TournamentTableRow from "../../home/components/TournamentTableRow";
 
 const TournamentPage = () => {
   const { fetchData, postData } = useFetch();
   const { data, setData } = fetchData("GET /tournaments");
   const deleteMutation = postData("DELETE /tournaments/:id");
-  const generateFixtureMutation = postData("POST /tournaments/:id/generate-fixture");
+  const generateFixtureMutation = postData(
+    "POST /tournaments/:id/generate-fixture"
+  );
   const [tournamentSelected, setTournamentSelected] =
     useState<Tournament | null>(null);
 
@@ -34,6 +37,9 @@ const TournamentPage = () => {
           id,
         },
         onSuccess: (response) => {
+          setData((prev) =>
+            prev.map((t) => (t.id === response.data.id ? response.data : t))
+          );
           toastSuccess(response.message);
         },
       });
@@ -63,50 +69,40 @@ const TournamentPage = () => {
       </Modal>
       <div className="flex-1 overflow-auto flex flex-col gap-4">
         {data?.map((tournament) => (
-          <div
-            key={tournament.id}
-            className="p-4 border rounded-md flex justify-between items-center"
-          >
-            <div>
-              <p>
-                <strong>Nombre:</strong> {tournament.name}
-              </p>
-              <p>
-                <strong>Fecha:</strong> {tournament.dateStart}
-              </p>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <TournamentTableRow showInfo={false} tournament={tournament} />
             </div>
-            <div className="flex gap-2">
-              <Modal
-                title="Editar Torneo"
-                description="Modifique los datos del torneo"
-                button={
-                  <Button
-                    variant="secondary"
-                    onClick={() => setTournamentSelected(tournament)}
-                  >
-                    Editar
-                  </Button>
-                }
-              >
-                <TournamentForm
-                  closeModal={() => {}}
-                  setData={setData}
-                  tournament={tournamentSelected}
-                />
-              </Modal>
-              <Button
-                variant="destructive"
-                onClick={() => handleDelete(tournament.id)}
-              >
-                Eliminar
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => handleFitxure(tournament.id)}
-              >
-                Generar fixture
-              </Button>
-            </div>
+            <Modal
+              title="Editar Torneo"
+              description="Modifique los datos del torneo"
+              button={
+                <Button
+                  variant="secondary"
+                  onClick={() => setTournamentSelected(tournament)}
+                >
+                  Editar
+                </Button>
+              }
+            >
+              <TournamentForm
+                closeModal={() => {}}
+                setData={setData}
+                tournament={tournamentSelected}
+              />
+            </Modal>
+            <Button
+              variant="destructive"
+              onClick={() => handleDelete(tournament.id)}
+            >
+              Eliminar
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => handleFitxure(tournament.id)}
+            >
+              Generar fixture
+            </Button>
           </div>
         ))}
       </div>

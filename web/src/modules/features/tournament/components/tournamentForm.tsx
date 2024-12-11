@@ -140,6 +140,7 @@ const TournamentForm = ({ closeModal, setData, tournament }: Props) => {
           </div>
         ))}
       </div>
+      <p>{errors.clubIds?.message}</p>
       <button type="submit">
         {tournament ? "Editar torneo" : "Publicar torneo"}
       </button>

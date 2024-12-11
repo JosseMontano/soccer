@@ -19,6 +19,25 @@ export interface Tournament {
   categoryId: string;
   status: string;
   fixtureGenerated: boolean;
+  games: {
+    id: string;
+    firstTeamId: string;
+    secondTeamId: string;
+    tournamentId: string;
+    date: string;
+    goalsFirstTeam: number;
+    goalsSecondTeam: number;
+    yellowCardsFirstTeam: number;
+    yellowCardsSecondTeam: number;
+    redCardsFirstTeam: number;
+    redCardsSecondTeam: number;
+    foulsFirstTeam: number;
+    foulsSecondTeam: number;
+    winnerId: string | null;
+
+    firstTeam: Team;
+    secondTeam: Team;
+  }[];
 }
 
 export interface TeamHistoryGame {

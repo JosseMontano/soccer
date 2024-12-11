@@ -20,6 +20,20 @@ export function tournamentRoutes(router: FastifyInstance) {
           format: true,
           finalFormat: true,
           category: true,
+          games: {
+            include: {
+              firstTeam: {
+                include: {
+                  players: true, // Include players of the first team
+                },
+              },
+              secondTeam: {
+                include: {
+                  players: true, // Include players of the second team
+                },
+              },
+            },
+          },
         },
       });
       const response: ResponseType = {
@@ -48,6 +62,9 @@ export function tournamentRoutes(router: FastifyInstance) {
             },
           },
           include: {
+            format: true,
+            finalFormat: true,
+            category: true,
             games: {
               include: {
                 firstTeam: {
@@ -72,7 +89,8 @@ export function tournamentRoutes(router: FastifyInstance) {
         const victoryCount: Record<string, number> = {};
         allGames.forEach((game) => {
           if (game.winnerId) {
-            victoryCount[game.winnerId] = (victoryCount[game.winnerId] || 0) + 1;
+            victoryCount[game.winnerId] =
+              (victoryCount[game.winnerId] || 0) + 1;
           }
         });
 
@@ -84,10 +102,7 @@ export function tournamentRoutes(router: FastifyInstance) {
             if (!teamHistories[teamId]) {
               teamHistories[teamId] = await prisma.game.findMany({
                 where: {
-                  OR: [
-                    { firstTeamId: teamId },
-                    { secondTeamId: teamId },
-                  ],
+                  OR: [{ firstTeamId: teamId }, { secondTeamId: teamId }],
                   tournamentId: { not: game.tournamentId }, // Exclude current tournament
                 },
                 include: {
@@ -95,7 +110,7 @@ export function tournamentRoutes(router: FastifyInstance) {
                   secondTeam: true,
                 },
                 orderBy: {
-                  date: 'desc', // Replace `date` with your actual game date field
+                  date: "desc", // Replace `date` with your actual game date field
                 },
                 take: 5, // Limit to last 5 games
               });
@@ -128,7 +143,6 @@ export function tournamentRoutes(router: FastifyInstance) {
           status: 200,
         };
         return reply.status(200).send(response);
-
       } catch (error) {
         if (error instanceof Error) {
           return reply
@@ -138,7 +152,6 @@ export function tournamentRoutes(router: FastifyInstance) {
       }
     }
   );
-
 
   router.post(endPointTournaments, async (request, reply) => {
     try {
@@ -162,6 +175,7 @@ export function tournamentRoutes(router: FastifyInstance) {
           message: "Algunos clubes no pertenecen a la categoría del torneo",
         });
       }
+
       const newTournament = await prisma.tournaments.create({
         data: {
           name: data.name,
@@ -171,6 +185,25 @@ export function tournamentRoutes(router: FastifyInstance) {
           formatId: data.formatId,
           finalFormatId: data.finalFormatId,
           categoryId: data.categoryId,
+        },
+        include: {
+          format: true,
+          finalFormat: true,
+          category: true,
+          games: {
+            include: {
+              firstTeam: {
+                include: {
+                  players: true, // Include players of the first team
+                },
+              },
+              secondTeam: {
+                include: {
+                  players: true, // Include players of the second team
+                },
+              },
+            },
+          },
         },
       });
 
@@ -250,6 +283,25 @@ export function tournamentRoutes(router: FastifyInstance) {
           ...data,
           dateStart: `${data.dateStart}T00:00:00.000Z`,
           dateEnd: `${data.dateEnd}T00:00:00.000Z`,
+        },
+        include: {
+          format: true,
+          finalFormat: true,
+          category: true,
+          games: {
+            include: {
+              firstTeam: {
+                include: {
+                  players: true, // Include players of the first team
+                },
+              },
+              secondTeam: {
+                include: {
+                  players: true, // Include players of the second team
+                },
+              },
+            },
+          },
         },
       });
 
@@ -340,7 +392,7 @@ export function tournamentRoutes(router: FastifyInstance) {
         const totalDays = Math.ceil(
           (new Date(tournament.dateEnd).getTime() -
             new Date(tournament.dateStart).getTime()) /
-          86400000
+            86400000
         );
         if (totalDays < teams.length / 2) {
           return reply.status(400).send({
@@ -389,9 +441,34 @@ export function tournamentRoutes(router: FastifyInstance) {
           data: { fixtureGenerated: true },
         });
 
+        const tournamentRes = await prisma.tournaments.findUnique({
+          where: {
+            id
+          },
+          include: {
+            format: true,
+            finalFormat: true,
+            category: true,
+            games: {
+              include: {
+                firstTeam: {
+                  include: {
+                    players: true, // Include players of the first team
+                  },
+                },
+                secondTeam: {
+                  include: {
+                    players: true, // Include players of the second team
+                  },
+                },
+              },
+            },
+          },
+        });
+
         const response: ResponseType = {
           message: "Fixture generado exitosamente.",
-          data: createdGames,
+          data: tournamentRes,
           status: 201,
         };
         return reply.status(201).send(response);
