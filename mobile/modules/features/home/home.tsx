@@ -7,6 +7,7 @@ import {
   Easing,
   Image,
   ScrollView,
+  Platform,
 } from "react-native";
 import {
   primaryColor,
@@ -14,13 +15,14 @@ import {
   tertiaryColor,
 } from "../../core/constant/color";
 import { Header } from "./components/header";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useFetch from "../../core/hooks/useFetch";
 import { ModalComp } from "../../core/components/modal";
-import { Game } from "./api/responses";
+import { Game, TournamentFixture } from "./api/responses";
 import { ExtraInfo } from "./components/extraInfo";
 import Icon from 'react-native-vector-icons/AntDesign';
-
+import { channel } from "../../core/libs/pusher";
+import DateTimePicker from "@react-native-community/datetimepicker";
 //caretdown caretup
 type AccordionState = {
   isCollapsed: boolean;
@@ -29,12 +31,74 @@ type AccordionState = {
 
 export const Home = () => {
   const { fetchData, postData } = useFetch();
-  const { data: tournament } = fetchData("GET /tournaments/tournamentsPublic");
+
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const { data } = fetchData(
+    `GET /tournaments/tournamentsPublic?date=${selectedDate.toISOString().split("T")[0]}` as any
+  );
 
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<"firstTeam" | "secondTeam">(
     "firstTeam"
   );
+
+  const [tournament, setTournament] = useState<TournamentFixture[]>([]);
+
+  useEffect(() => {
+    if (data) {
+      setTournament(data);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    const eventName = "new-goal";
+    channel.bind(
+      eventName,
+      (res: {
+        tournamentId: string;
+        gameId: string;
+        team: "firstTeam" | "secondTeam";
+        action: "increment" | "decrement";
+        newGoals: number;
+      }) => {
+        setTournament((prev) => {
+          return prev.map((t) => {
+            if (t.id === res.tournamentId) {
+              return {
+                ...t,
+                games: t.games.map((g) => {
+                  if (g.id === res.gameId) {
+                    return {
+                      ...g,
+                      goalsFirstTeam:
+                        res.team === "firstTeam"
+                          ? res.newGoals
+                          : g.goalsFirstTeam,
+                      goalsSecondTeam:
+                        res.team === "secondTeam"
+                          ? res.newGoals
+                          : g.goalsSecondTeam,
+                    };
+                  }
+                  return g;
+                }),
+              };
+            }
+            return t;
+          });
+        });
+      }
+    );
+  }, []);
+  const handleDateChange = (event: any, date?: Date) => {
+    setShowDatePicker(false);
+    if (date) {
+      setSelectedDate(date);
+    }
+  };
+
+  const toggleDatePicker = () => setShowDatePicker((prev) => !prev);
 
   const postMutation = postData("POST /games/events/prediction");
   const [prediction, setPrediction] = useState("");
@@ -100,6 +164,22 @@ export const Home = () => {
     <ScrollView style={{ flex: 1, backgroundColor: secondaryColor }}>
       <View style={styles.container}>
         <Header />
+        <View style={styles.containerHeader}>
+          <Text style={styles.title}>Torneos</Text>
+          <TouchableOpacity onPress={toggleDatePicker} style={styles.dateButton}>
+            <Text style={styles.dateText}>
+              {selectedDate.toISOString().split("T")[0]}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        {showDatePicker && (
+          <DateTimePicker
+            value={selectedDate}
+            mode="date"
+            display={Platform.OS === "ios" ? "spinner" : "default"} 
+            onChange={handleDateChange}
+          />
+        )}  
         <View style={styles.containerHeader}>
           <Text style={styles.title}>Torneos</Text>
           <Text style={styles.title}>22-10-14</Text>
@@ -210,6 +290,15 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "500",
     fontSize: 18,
+  },
+  dateButton: {
+    padding: 8,
+    backgroundColor: tertiaryColor,
+    borderRadius: 6,
+  },
+  dateText: {
+    color: "#fff",
+    fontSize: 16,
   },
   collapseText: {
     color: primaryColor,
