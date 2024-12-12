@@ -15,7 +15,7 @@ export const ExtraInfo = ({
   onSubmit,
   prediction,
   setPrediction,
-  clubId="", tournamentId=""
+  clubId, tournamentId
 }: ParamsType) => {
 
   const { fetchData } = useFetch();
@@ -40,9 +40,7 @@ export const ExtraInfo = ({
     </View>
   );
 
-  console.log(clubId);
-
-  if(clubId=="" || tournamentId==""){
+  if(!data){
     return <Text>Cargando</Text>
   }
 
