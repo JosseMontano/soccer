@@ -5,6 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "ts-node-dev src/app.ts",
+    "postinstall": "prisma generate",
+    "build": "prisma generate && npx prisma migrate dev && tsc",
     "seed": "ts-node-dev prisma/seed.ts",
     "seedTypeCategories": "ts-node-dev prisma/seedTypeCategories.ts",
     "seedCategories": "ts-node-dev prisma/seedCategories.ts",
