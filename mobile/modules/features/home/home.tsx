@@ -228,21 +228,23 @@ export const Home = () => {
           );
         })}
 
-        <ModalComp
-          setVisible={setIsOpen}
-          visible={isOpen}
-          title="Informacion del equipo"
-          children={
-            <ExtraInfo
-              gameSelected={gameSelected[selectedTeam]}
-              onSubmit={onSubmit}
-              prediction={prediction}
-              setPrediction={setPrediction}
-              clubId={gameSelected[selectedTeam].id}
-              tournamentId={gameSelected.tournamentId}
-            />
-          }
-        />
+        {gameSelected.id && (
+           <ModalComp
+           setVisible={setIsOpen}
+           visible={isOpen}
+           title="Informacion del equipo"
+           children={
+             <ExtraInfo
+               gameSelected={gameSelected[selectedTeam]}
+               onSubmit={onSubmit}
+               prediction={prediction}
+               setPrediction={setPrediction}
+               clubId={gameSelected[selectedTeam].id}
+               tournamentId={gameSelected.tournamentId}
+             />
+           }
+         /> 
+        )}
       </View>
     </ScrollView>
   );

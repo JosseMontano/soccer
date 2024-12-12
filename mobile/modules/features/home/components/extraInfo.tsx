@@ -15,7 +15,7 @@ export const ExtraInfo = ({
   onSubmit,
   prediction,
   setPrediction,
-  clubId, tournamentId
+  clubId="", tournamentId=""
 }: ParamsType) => {
 
   const { fetchData } = useFetch();
@@ -29,7 +29,7 @@ export const ExtraInfo = ({
       setPrediction("");
     };
     handleLoad();
-  }, [gameSelected]);
+  }, [gameSelected, clubId, tournamentId]);
 
   const renderRow = ({ item }: { item: TeamHistoryGame }) => (
     <View style={styles.row}>
@@ -39,6 +39,12 @@ export const ExtraInfo = ({
       <Text style={styles.cell}>{item.goalsSecondTeam}</Text>
     </View>
   );
+
+  console.log(clubId);
+
+  if(clubId=="" || tournamentId==""){
+    return <Text>Cargando</Text>
+  }
 
   return (
     <View style={styles.container}>
