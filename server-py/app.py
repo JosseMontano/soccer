@@ -21,14 +21,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-""" app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Acepta solicitudes desde cualquier origen
-    allow_credentials=True,
-    allow_methods=["*"],  # Permite cualquier método HTTP
-    allow_headers=["*"],  # Permite cualquier cabecera
-)
- """
 class PredictionRequest(BaseModel):
     amountVictoriesTeam1: int
     amountVictoriesTeam2: float
