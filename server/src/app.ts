@@ -1,6 +1,5 @@
-
 import Fastify from 'fastify';
-import cors from '@fastify/cors'
+import cors from '@fastify/cors';
 import { categoryRoutes } from './app/categories/categories.controller';
 import { config } from './common/config/config';
 import { clubRoutes } from './app/clubs/clubs.controller';
@@ -13,45 +12,40 @@ import { tournamentRoutes } from './app/tournaments/tournament.controller';
 import { gameRoutes } from './app/game/game.controller';
 import { usersRoutes } from './app/users/users.controller';
 
-const server = Fastify({ logger: true });
+let server:any;
 
+function buildServer() {
+    if (!server) {
+        server = Fastify({ logger: true });
 
-async function main() {
+        // Register plugins
+        server.register(cors, {
+            origin: '*',
+            methods: ['GET', 'POST', 'PUT', 'DELETE']
+        });
 
-    server.register(cors, {
-        origin: '*',
-        methods: ['GET', 'POST', 'PUT', 'DELETE']
-    })
-
-    server.get('/', async (request, reply) => {
-        return reply.send({ service: 'welcome to soccer world' });
-    });
-    usersRoutes(server)
-    categoryRoutes(server);
-    clubRoutes(server);
-    clubCategoriesRoutes(server);
-    typeOfPassRoutes(server);
-    playerRoutes(server);
-    historyPlayerRoutes(server);
-    formatRoutes(server);
-    tournamentRoutes(server);
-    gameRoutes(server);
-    //clubCategoriesRoutes(server);
-
-    try {
-        server.listen({ host: config.address, port: config.port }, (err) => { if (err) throw err })
-    } catch (err) {
-        server.log.error(err);
-        process.exit(1);
+        // Define routes
+        server.get('/', async (request:any, reply:any) => {
+            return reply.send({ service: 'welcome to soccer world' });
+        });
+        usersRoutes(server);
+        categoryRoutes(server);
+        clubRoutes(server);
+        clubCategoriesRoutes(server);
+        typeOfPassRoutes(server);
+        playerRoutes(server);
+        historyPlayerRoutes(server);
+        formatRoutes(server);
+        tournamentRoutes(server);
+        gameRoutes(server);
     }
 
+    return server;
 }
 
-
-main()
-
-
-export default main;
-
-
-
+// Export the Vercel-compatible handler
+export default async function handler(req:any, res:any) {
+    const app = buildServer();
+    await app.ready(); // Ensure the server is initialized
+    app.server.emit('request', req, res); // Forward the request to Fastify
+}
