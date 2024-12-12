@@ -12,54 +12,45 @@ import { tournamentRoutes } from './app/tournaments/tournament.controller';
 import { gameRoutes } from './app/game/game.controller';
 import { usersRoutes } from './app/users/users.controller';
 
-let server:any;
+const server = Fastify({ logger: true });
 
-export function buildServer() {
-    if (!server) {
-        server = Fastify({ logger: true });
+// Register plugins
+server.register(cors, {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
+});
 
-        // Register plugins
-        server.register(cors, {
-            origin: '*',
-            methods: ['GET', 'POST', 'PUT', 'DELETE']
-        });
+// Define routes
+server.get('/', async (request, reply) => {
+    return reply.send({ service: 'welcome to soccer world' });
+});
 
-        // Define routes
-        server.get('/', async (request:any, reply:any) => {
-            return reply.send({ service: 'welcome to soccer world' });
-        });
+// Register application routes
+usersRoutes(server);
+categoryRoutes(server);
+clubRoutes(server);
+clubCategoriesRoutes(server);
+typeOfPassRoutes(server);
+playerRoutes(server);
+historyPlayerRoutes(server);
+formatRoutes(server);
+tournamentRoutes(server);
+gameRoutes(server);
 
-        // Register application routes
-        usersRoutes(server);
-        categoryRoutes(server);
-        clubRoutes(server);
-        clubCategoriesRoutes(server);
-        typeOfPassRoutes(server);
-        playerRoutes(server);
-        historyPlayerRoutes(server);
-        formatRoutes(server);
-        tournamentRoutes(server);
-        gameRoutes(server);
-    }
+// Export the server as the default export for Vercel
+export default server;
 
-    return server;
-}
-
+// Start the server locally if running as a script
 if (require.main === module) {
-    // Run the server
-    const localServer = buildServer();
-
-    // Use Vercel's dynamic port if available
-    const port = process.env.PORT || config.port; // Default to config.port for local testing
+    const port = process.env.PORT || config.port;
     const address = config.address;
 
-    localServer.listen({ port, host: address }, (err:any, address:string) => {
+    //@ts-ignore
+    server.listen({ port, host: address }, (err, address) => {
         if (err) {
-            localServer.log.error(err);
+            server.log.error(err);
             process.exit(1);
         }
-        console.log(`Server running at ${address}`);
+        console.log(`Server running locally at ${address}`);
     });
 }
- 
-
