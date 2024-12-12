@@ -1,4 +1,4 @@
-import Fastify from 'fastify';
+/* import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { categoryRoutes } from './app/categories/categories.controller';
 import { config } from './common/config/config';
@@ -61,3 +61,52 @@ if (require.main === module) {
         console.log(`Server running at ${address}`);
     });
 }
+ */
+
+import Fastify from 'fastify';
+import cors from '@fastify/cors'
+import fastify from 'fastify';
+import { config } from './common/config/config';
+
+const server = Fastify({ logger: true });
+
+
+const test = false;
+
+async function main() {
+
+    server.register(cors, { 
+        origin: '*',
+        methods: ['GET', 'POST', 'PUT', 'DELETE']
+      })
+
+    server.get('/', async (request, reply) => {
+        return reply.send({ service: 'welcome to SIVI' });
+    });
+
+/*     companyRoutes(server);
+    ComCategoriesRoues(server)
+    authRoutes(server)
+    companiesComCategoriesRoutes(server)
+    userRoutes(server)
+    commentRoutes(server)
+    prodCategoryRoutes(server)
+    productRoutes(server) */
+    if(test){
+        return server;
+    }
+
+    try {
+        server.listen({host:config.address, port: config.port}, (err) => { if (err) throw err })
+    } catch (err) {
+        server.log.error(err);
+        process.exit(1);
+    }
+
+}
+
+//if you wanna run the test, gotta comment the main()
+main()
+
+
+export default main;
