@@ -70,11 +70,9 @@ import { config } from './common/config/config';
 
 const server = Fastify({ logger: true });
 
-
 const test = false;
 
 async function main() {
-
     server.register(cors, { 
         origin: '*',
         methods: ['GET', 'POST', 'PUT', 'DELETE']
