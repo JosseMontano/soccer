@@ -14,7 +14,7 @@ import { usersRoutes } from './app/users/users.controller';
 
 let server:any;
 
-function buildServer() {
+export function buildServer() {
     if (!server) {
         server = Fastify({ logger: true });
 
@@ -28,6 +28,8 @@ function buildServer() {
         server.get('/', async (request:any, reply:any) => {
             return reply.send({ service: 'welcome to soccer world' });
         });
+
+        // Register application routes
         usersRoutes(server);
         categoryRoutes(server);
         clubRoutes(server);
@@ -43,9 +45,14 @@ function buildServer() {
     return server;
 }
 
-// Export the Vercel-compatible handler
-export default async function handler(req:any, res:any) {
-    const app = buildServer();
-    await app.ready(); // Ensure the server is initialized
-    app.server.emit('request', req, res); // Forward the request to Fastify
+if (require.main === module) {
+    // Run the server locally
+    const localServer = buildServer();
+    localServer.listen({ port: config.port, host: config.address }, (err:any, address:any) => {
+        if (err) {
+            localServer.log.error(err);
+            process.exit(1);
+        }
+        console.log(`Server running locally at ${address}`);
+    });
 }
