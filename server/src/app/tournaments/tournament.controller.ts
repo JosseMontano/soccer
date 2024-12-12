@@ -52,6 +52,35 @@ export function tournamentRoutes(router: FastifyInstance) {
   });
 
   router.get(
+    `${endPointTournaments}/info-club`, async (request, reply) => {
+      const { clubId, tournamentId } = request.query as { clubId: string, tournamentId: string };
+
+
+      // Fetch all games to calculate total victories
+      const allGames = await prisma.game.findMany({
+        where: {
+          OR: [
+            { firstTeamId: clubId },
+            { secondTeamId: clubId },
+          ],
+          tournamentId: { not: tournamentId }
+        },
+        include: {
+          firstTeam: true,
+          secondTeam: true
+        }
+      });
+
+      const response: ResponseType = {
+        message: "Informacion del club obtenida exitosamente",
+        data: allGames,
+        status: 200,
+      };
+      return reply.status(200).send(response);
+    }
+  )
+
+  router.get(
     `${endPointTournaments}/tournamentsPublic`,
     async (request, reply) => {
       const { date } = request.query as { date: string };
@@ -112,7 +141,10 @@ export function tournamentRoutes(router: FastifyInstance) {
           }
         });
 
+        //console.log(allGames);
         // Fetch the last 5 games for each team, excluding the current tournament
+
+
         const teamHistories: Record<string, any[]> = {};
         for (const game of allGames) {
           const teamIds = [game.firstTeamId, game.secondTeamId];
@@ -410,7 +442,7 @@ export function tournamentRoutes(router: FastifyInstance) {
         const totalDays = Math.ceil(
           (new Date(tournament.dateEnd).getTime() -
             new Date(tournament.dateStart).getTime()) /
-            86400000
+          86400000
         );
         if (totalDays < teams.length / 2) {
           return reply.status(400).send({

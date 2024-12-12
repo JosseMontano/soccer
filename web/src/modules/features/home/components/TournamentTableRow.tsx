@@ -14,6 +14,7 @@ import useFetch, { SetData } from "@/modules/core/hooks/useFetch";
 import { ColumnDef } from "@tanstack/react-table";
 import { Prediction } from "./prediction";
 import { toastError, toastSuccess } from "@/modules/core/utils/toast";
+import { HistoryTable } from "./historyGames";
 interface Props {
   open?: boolean;
   showInfo?: boolean;
@@ -40,6 +41,11 @@ const TournamentTableRow = ({
     {
       accessorKey: "secondTeam.name",
       header: "Visitante",
+    },
+    {
+      accessorKey: "date",
+      header: "Fecha",
+      accessorFn: (row) => row.date.split("T")[0],
     },
     {
       accessorKey: "goalsFirstTeam",
@@ -209,12 +215,10 @@ const TournamentTableRow = ({
                         </span>
                       </div>
 
-                      <div>
-                        <DataTable
-                          columns={columns}
-                          data={game.firstTeam.history}
-                        />
-                      </div>
+                      <HistoryTable
+                        clubId={game.firstTeam.id}
+                        tournamentId={game.tournamentId}
+                      />
                     </Modal>
                   )}
 
@@ -235,7 +239,12 @@ const TournamentTableRow = ({
                     <>
                       <button
                         onClick={() =>
-                          handleGameGoal(game.id, "firstTeam", "increment", game.goalsFirstTeam)
+                          handleGameGoal(
+                            game.id,
+                            "firstTeam",
+                            "increment",
+                            game.goalsFirstTeam
+                          )
                         }
                         className="text-xs"
                       >
@@ -243,7 +252,12 @@ const TournamentTableRow = ({
                       </button>
                       <button
                         onClick={() =>
-                          handleGameGoal(game.id, "firstTeam", "decrement", game.goalsFirstTeam)
+                          handleGameGoal(
+                            game.id,
+                            "firstTeam",
+                            "decrement",
+                            game.goalsFirstTeam
+                          )
                         }
                         className="text-xs"
                       >
@@ -263,7 +277,12 @@ const TournamentTableRow = ({
                     <>
                       <button
                         onClick={() =>
-                          handleGameGoal(game.id, "secondTeam", "increment", game.goalsSecondTeam)
+                          handleGameGoal(
+                            game.id,
+                            "secondTeam",
+                            "increment",
+                            game.goalsSecondTeam
+                          )
                         }
                         className="text-xs"
                       >
@@ -271,7 +290,12 @@ const TournamentTableRow = ({
                       </button>
                       <button
                         onClick={() =>
-                          handleGameGoal(game.id, "secondTeam", "decrement", game.goalsSecondTeam)
+                          handleGameGoal(
+                            game.id,
+                            "secondTeam",
+                            "decrement",
+                            game.goalsSecondTeam
+                          )
                         }
                         className="text-xs"
                       >
@@ -329,12 +353,10 @@ const TournamentTableRow = ({
                           setPrediction={setPrediction}
                         />
 
-                        <div>
-                          <DataTable
-                            columns={columns}
-                            data={game.secondTeam.history}
-                          />
-                        </div>
+                        <HistoryTable
+                          clubId={game.secondTeam.id}
+                          tournamentId={game.tournamentId}
+                        />
                       </Modal>
                     </span>
                   )}

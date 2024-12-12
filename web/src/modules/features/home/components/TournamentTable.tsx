@@ -13,6 +13,7 @@ const TournamentTable = ({ date }: Props) => {
   const { data } = fetchData(
     `GET /tournaments/tournamentsPublic?date=${date}` as any
   );
+
   const [tournament, setTournament] = useState<TournamentFixture[]>([]);
 
   useEffect(() => {
