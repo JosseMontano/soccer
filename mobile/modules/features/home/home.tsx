@@ -238,6 +238,8 @@ export const Home = () => {
               onSubmit={onSubmit}
               prediction={prediction}
               setPrediction={setPrediction}
+              clubId={gameSelected[selectedTeam].id}
+              tournamentId={gameSelected.tournamentId}
             />
           }
         />

@@ -7,13 +7,23 @@ type ParamsType = {
   onSubmit: (v1: number, v2: number) => Promise<void>;
   setPrediction: (val: string) => void;
   prediction: string;
+  clubId:string;
+  tournamentId:string
 };
 export const ExtraInfo = ({
   gameSelected,
   onSubmit,
   prediction,
   setPrediction,
+  clubId, tournamentId
 }: ParamsType) => {
+
+  const { fetchData } = useFetch();
+  const { data } = fetchData(
+    `GET /tournaments/info-club?clubId=${clubId}&tournamentId=${tournamentId}` as any
+  );
+  console.log(data);
+
   useEffect(() => {
     const handleLoad = async () => {
       setPrediction("");
@@ -68,7 +78,7 @@ export const ExtraInfo = ({
           </Text>
         </View>
         <FlatList
-          data={gameSelected?.history}
+          data={data ?? []}
           renderItem={renderRow}
           keyExtractor={(item, index) => index.toString()}
           style={styles.table}
