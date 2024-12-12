@@ -56,6 +56,29 @@ function tournamentRoutes(router) {
             }
         }
     }));
+    router.get(`${exports.endPointTournaments}/info-club`, (request, reply) => __awaiter(this, void 0, void 0, function* () {
+        const { clubId, tournamentId } = request.query;
+        // Fetch all games to calculate total victories
+        const allGames = yield prisma.game.findMany({
+            where: {
+                OR: [
+                    { firstTeamId: clubId },
+                    { secondTeamId: clubId },
+                ],
+                tournamentId: { not: tournamentId }
+            },
+            include: {
+                firstTeam: true,
+                secondTeam: true
+            }
+        });
+        const response = {
+            message: "Informacion del club obtenida exitosamente",
+            data: allGames,
+            status: 200,
+        };
+        return reply.status(200).send(response);
+    }));
     router.get(`${exports.endPointTournaments}/tournamentsPublic`, (request, reply) => __awaiter(this, void 0, void 0, function* () {
         const { date } = request.query;
         const selectedDate = date ? new Date(date) : new Date(); // Crear un rango para la fecha seleccionada
@@ -111,6 +134,7 @@ function tournamentRoutes(router) {
                         (victoryCount[game.winnerId] || 0) + 1;
                 }
             });
+            //console.log(allGames);
             // Fetch the last 5 games for each team, excluding the current tournament
             const teamHistories = {};
             for (const game of allGames) {
