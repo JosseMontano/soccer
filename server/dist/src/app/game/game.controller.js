@@ -110,7 +110,7 @@ function gameRoutes(router) {
                 });
             }
             // Send data to the prediction API
-            const response = yield fetch("http://0.0.0.0:5000/api/prediction", {
+            const response = yield fetch("http://127.0.0.1:5000/api/prediction", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
