@@ -12,10 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = handler;
 const fastify_1 = __importDefault(require("fastify"));
 const cors_1 = __importDefault(require("@fastify/cors"));
+const users_controller_1 = require("./app/users/users.controller");
 const categories_controller_1 = require("./app/categories/categories.controller");
-const config_1 = require("./common/config/config");
 const clubs_controller_1 = require("./app/clubs/clubs.controller");
 const clubs_controller_2 = require("./app/clubsCategories/clubs.controller");
 const typeOfPass_controller_1 = require("./app/typeOfPass/typeOfPass.controller");
@@ -24,40 +25,29 @@ const historyPlayer_controller_1 = require("./app/historyPlayer/historyPlayer.co
 const format_controller_1 = require("./app/format/format.controller");
 const tournament_controller_1 = require("./app/tournaments/tournament.controller");
 const game_controller_1 = require("./app/game/game.controller");
-const users_controller_1 = require("./app/users/users.controller");
-const server = (0, fastify_1.default)({ logger: true });
-// Register plugins
-server.register(cors_1.default, {
+const app = (0, fastify_1.default)({
+    logger: true,
+});
+app.register(cors_1.default, {
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE']
 });
-// Define routes
-server.get('/', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
-    return reply.send({ service: 'welcome to soccer world' });
+app.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    return res.send({ service: 'welcome to soccer world' });
 }));
-// Register application routes
-(0, users_controller_1.usersRoutes)(server);
-(0, categories_controller_1.categoryRoutes)(server);
-(0, clubs_controller_1.clubRoutes)(server);
-(0, clubs_controller_2.clubCategoriesRoutes)(server);
-(0, typeOfPass_controller_1.typeOfPassRoutes)(server);
-(0, player_controller_1.playerRoutes)(server);
-(0, historyPlayer_controller_1.historyPlayerRoutes)(server);
-(0, format_controller_1.formatRoutes)(server);
-(0, tournament_controller_1.tournamentRoutes)(server);
-(0, game_controller_1.gameRoutes)(server);
-// Export the server as the default export for Vercel
-exports.default = server;
-// Start the server locally if running as a script
-if (require.main === module) {
-    const port = process.env.PORT || config_1.config.port;
-    const address = config_1.config.address;
-    //@ts-ignore
-    server.listen({ port, host: address }, (err, address) => {
-        if (err) {
-            server.log.error(err);
-            process.exit(1);
-        }
-        console.log(`Server running locally at ${address}`);
+(0, users_controller_1.usersRoutes)(app);
+(0, categories_controller_1.categoryRoutes)(app);
+(0, clubs_controller_1.clubRoutes)(app);
+(0, clubs_controller_2.clubCategoriesRoutes)(app);
+(0, typeOfPass_controller_1.typeOfPassRoutes)(app);
+(0, player_controller_1.playerRoutes)(app);
+(0, historyPlayer_controller_1.historyPlayerRoutes)(app);
+(0, format_controller_1.formatRoutes)(app);
+(0, tournament_controller_1.tournamentRoutes)(app);
+(0, game_controller_1.gameRoutes)(app);
+function handler(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield app.ready();
+        app.server.emit('request', req, res);
     });
 }
