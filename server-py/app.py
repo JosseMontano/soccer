@@ -4,8 +4,8 @@ import uvicorn
 from pydantic import BaseModel 
 import pandas as pd
 import numpy as np
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from tensorflow.python.keras.models import Sequential
+from tensorflow.python.keras.layers import Dense
 from sklearn.model_selection import train_test_split
 
 # Create FastAPI instance
@@ -21,14 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-""" app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Acepta solicitudes desde cualquier origen
-    allow_credentials=True,
-    allow_methods=["*"],  # Permite cualquier método HTTP
-    allow_headers=["*"],  # Permite cualquier cabecera
-)
- """
+
 class PredictionRequest(BaseModel):
     amountVictoriesTeam1: int
     amountVictoriesTeam2: float
@@ -67,7 +60,6 @@ async def seed():
 
 @app.post('/api/prediction')
 def preditcion(request: PredictionRequest):
-    print('come')
     # Carga y preprocesa tus datos
     data = pd.read_csv('historical_matches.csv')  # Dataset de partidos históricos
     X = data[['home_goals', 'away_goals']]   # Variables de entrada (estadísticas)
