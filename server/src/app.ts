@@ -46,13 +46,18 @@ export function buildServer() {
 }
 
 if (require.main === module) {
-    // Run the server locally
+    // Run the server
     const localServer = buildServer();
-    localServer.listen({ port: config.port, host: config.address }, (err:any, address:any) => {
+
+    // Use Vercel's dynamic port if available
+    const port = process.env.PORT || config.port; // Default to config.port for local testing
+    const address = config.address;
+
+    localServer.listen({ port, host: address }, (err:any, address:string) => {
         if (err) {
             localServer.log.error(err);
             process.exit(1);
         }
-        console.log(`Server running locally at ${address}`);
+        console.log(`Server running at ${address}`);
     });
 }
