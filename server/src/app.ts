@@ -44,8 +44,6 @@ async function main() {
         server.log.error(err);
         process.exit(1);
     }
-
-    
 }
 
 
