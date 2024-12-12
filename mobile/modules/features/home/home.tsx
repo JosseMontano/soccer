@@ -194,6 +194,7 @@ export const Home = () => {
                 <Text style={styles.title}>{v.name}</Text>
                 <TouchableOpacity onPress={() => toggleCollapse(v.id)}>
                   <Text style={styles.collapseText}>
+                    {/*@ts-ignore  */}
                     {isCollapsed ? <Icon name="caretdown" size={15}/> :  <Icon name="caretup" size={15}/>}
                   </Text>
                 </TouchableOpacity>
