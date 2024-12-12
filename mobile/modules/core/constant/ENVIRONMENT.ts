@@ -1,1 +1,1 @@
-export const API_URL = "https://soccer-back-ie4gaof5h-jossemontanos-projects.vercel.app"
+export const API_URL = "https://soccer-back.vercel.app"
