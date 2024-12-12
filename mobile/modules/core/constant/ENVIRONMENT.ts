@@ -1,1 +1,1 @@
-export const API_URL = "http://10.0.2.2:8000"
+export const API_URL = "https://soccer-back-ie4gaof5h-jossemontanos-projects.vercel.app"

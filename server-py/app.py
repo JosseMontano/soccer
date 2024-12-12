@@ -12,7 +12,7 @@ from sklearn.model_selection import train_test_split
 app = FastAPI()
 
 # Configure CORS
-origins = ["http://localhost:5173", "http://localhost:8000","exp://192.168.1.13:19000"]
+origins = ["https://soccer-back-ie4gaof5h-jossemontanos-projects.vercel.app","http://localhost:5173", "http://localhost:8000","exp://192.168.1.13:19000"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = handler;
 const fastify_1 = __importDefault(require("fastify"));
+const cors_1 = __importDefault(require("@fastify/cors"));
 const users_controller_1 = require("./app/users/users.controller");
 const categories_controller_1 = require("./app/categories/categories.controller");
 const clubs_controller_1 = require("./app/clubs/clubs.controller");
@@ -26,6 +27,10 @@ const tournament_controller_1 = require("./app/tournaments/tournament.controller
 const game_controller_1 = require("./app/game/game.controller");
 const app = (0, fastify_1.default)({
     logger: true,
+});
+app.register(cors_1.default, {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
 });
 app.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     return res.send({ service: 'welcome to soccer world' });

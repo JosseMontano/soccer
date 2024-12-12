@@ -1,4 +1,6 @@
 import Fastify from 'fastify'
+import cors from '@fastify/cors';
+
 import { usersRoutes } from './app/users/users.controller';
 import { categoryRoutes } from './app/categories/categories.controller';
 import { clubRoutes } from './app/clubs/clubs.controller';
@@ -13,6 +15,12 @@ import { gameRoutes } from './app/game/game.controller';
 const app = Fastify({
   logger: true,
 })
+
+app.register(cors, {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
+});
+
 
 app.get('/', async (req, res) => {
   return res.send({ service: 'welcome to soccer world' });
