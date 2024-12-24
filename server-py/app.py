@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from pydantic import BaseModel 
@@ -7,6 +7,8 @@ import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from sklearn.model_selection import train_test_split
+import pytesseract
+from PIL import Image
 
 # Create FastAPI instance
 app = FastAPI()
@@ -102,6 +104,38 @@ def preditcion(request: PredictionRequest):
     )
 
     return {"message": result_message, "status": 200, "data":result_message}
+
+@app.post('/api/datos')
+async def datos(request: Request):
+    try:
+        form = await request.form()
+        file = form["file"]
+        print(file)
+        img = Image.open(file.file)
+        text = pytesseract.image_to_string(img)
+        lines = [line.strip() for line in text.split('\n') if line.strip()]
+        nombres = None
+        apellidos = None
+        fechaNacimiento = None
+        ci = None
+        for i, line in enumerate(lines):
+            if "NOMBRES" in line or "pertenece" in line:
+                nombres = lines[i + 1] if i + 1 < len(lines) else ""
+            if "APELLIDOS" in line:
+                apellidos = lines[i + 1] if i + 1 < len(lines) else ""
+            if "NACIMIENTO" in line:
+                fechaNacimiento = lines[i + 1] if i + 1 < len(lines) else ""
+                try:
+                    fechaNacimiento = pd.to_datetime(fechaNacimiento, format='%d/%m/%Y').strftime('%Y-%m-%d')
+                except ValueError:
+                    fechaNacimiento = None
+            if "N°" in line:
+                ci = line.split("N°")[1].strip().replace(" ", "")
+        result = {"nombres": nombres, "apellidos": apellidos, "fechaNacimiento": fechaNacimiento, "ci": ci, "raw": lines }
+        return {"message": "Imagen escaneada correctamente", "status": 200, "data":result}
+    except Exception as e:
+        print(f"Error: {e}")
+        return {"message": "Error al escanear la imagen", "status": 400, "data":""}
 
 # Run the application
 if __name__ == '__main__':
