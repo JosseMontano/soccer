@@ -9,15 +9,15 @@ import { ApiErrorResponse, ApiSuccessResponse } from "../types/ApiResponse";
 import { TOKEN_NAME } from "../constant/TOKEN";
 import { HttpMethod } from "../types/HttpMethod";
 import Toast from "react-native-toast-message";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const toastError= (msg:string)=>{
+const toastError = (msg: string) => {
   Toast.show({
-    type: 'error',
-    text1: 'Error',
-    text2: msg
+    type: "error",
+    text1: "Error",
+    text2: msg,
   });
-}
+};
 
 export type SetData<T> = (setter: T | ((prev: T) => T)) => void;
 
@@ -55,7 +55,7 @@ const useFetch = () => {
   ) => {
     type TResponse = EndpointMap[K]["response"];
     const queryClient = useQueryClient();
-  
+
     const endpoint: string = Array.isArray(endpointConfig)
       ? endpointConfig[0]
       : endpointConfig;
@@ -63,9 +63,9 @@ const useFetch = () => {
       ? endpointConfig[1]
       : undefined;
     const urlBuild = buildUrl(endpoint, params);
-  
+
     const queryKey = params ? [endpoint, ...Object.values(params)] : [endpoint];
-  
+
     const returnValue = useQuery<ApiSuccessResponse<TResponse>>({
       queryKey,
       queryFn: async () => {
@@ -82,7 +82,7 @@ const useFetch = () => {
       },
       retry: false,
     });
-  
+
     const setData: SetData<TResponse> = (setter) => {
       if (!returnValue.data) return;
       queryClient.setQueryData(
@@ -96,7 +96,9 @@ const useFetch = () => {
         })
       );
     };
-  
+
+    console.log(returnValue.data);
+
     return {
       ...returnValue,
       res: returnValue.data,
@@ -115,19 +117,21 @@ const useFetch = () => {
     type TBody = EndpointMap[K]["request"];
     type TParams = EndpointMap[K]["params"];
     const paramsLocalStorageKey = "useFetchRequestParams";
-  
+
     const endpoint: string = Array.isArray(endpointConfig)
       ? endpointConfig[0]
       : endpointConfig;
     const [method] = endpoint.split(" ") as [HttpMethod, string];
-  
+
     const mutation = useMutation<ApiSuccessResponse<TResponse>, Error, TBody>({
       mutationFn: async (payload: TBody) => {
-        const parametersString = await AsyncStorage.getItem(paramsLocalStorageKey);
+        const parametersString = await AsyncStorage.getItem(
+          paramsLocalStorageKey
+        );
         const parameters = JSON.parse(parametersString || "{}");
         const urlBuild = buildUrl(endpoint, parameters);
         await AsyncStorage.removeItem(paramsLocalStorageKey);
-  
+
         const token = await AsyncStorage.getItem(TOKEN_NAME);
         const response = await fetch(API_URL + urlBuild, {
           method: method,
@@ -149,12 +153,12 @@ const useFetch = () => {
         toastError(error.message);
       },
     });
-  
+
     interface CustomMutationOptions<T1, T2, T3, T4>
       extends MutateOptions<T1, T2, T3, T4> {
       params?: TParams extends never ? void : TParams;
     }
-  
+
     const customMutation = (
       variables: TBody,
       options?: CustomMutationOptions<
@@ -165,14 +169,16 @@ const useFetch = () => {
       >
     ) => {
       if (options?.params) {
-        AsyncStorage.setItem(paramsLocalStorageKey, JSON.stringify(options.params));
+        AsyncStorage.setItem(
+          paramsLocalStorageKey,
+          JSON.stringify(options.params)
+        );
       }
       mutation.mutate(variables, options);
     };
-  
+
     return customMutation;
   };
-  
 
   return { fetchData, postData };
 };

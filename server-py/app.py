@@ -4,8 +4,8 @@ import uvicorn
 from pydantic import BaseModel 
 import pandas as pd
 import numpy as np
-from tensorflow.python.keras.models import Sequential
-from tensorflow.python.keras.layers import Dense
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
 from sklearn.model_selection import train_test_split
 
 # Create FastAPI instance
@@ -105,4 +105,4 @@ def preditcion(request: PredictionRequest):
 
 # Run the application
 if __name__ == '__main__':
-    uvicorn.run(app, host="0.0.0.0", port=5000, debug=True)
+    uvicorn.run(app, host="localhost", port=5069)
