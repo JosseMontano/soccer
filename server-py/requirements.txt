@@ -1,6 +1,7 @@
-tensorflow
-scikit-learn
-numpy
+tensorflow==2.10.0
+scikit-learn==1.1.3
+numpy==1.23
+python-multipart
 pandas
 fastapi
 uvicorn

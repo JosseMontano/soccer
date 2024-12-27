@@ -19,6 +19,7 @@ const PlayerForm = ({ closeModal, setData, player }: Props) => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<PlayerDTO>({
     defaultValues: {
@@ -74,59 +75,109 @@ const PlayerForm = ({ closeModal, setData, player }: Props) => {
   };
   /* onSuccess me da una data*/
   console.log(clubs);
+  const handleGetScanResult = async () => {
+    const input = document.getElementById("InputEscanear") as HTMLInputElement;
+    if (input && input.files && input.files.length > 0) {
+      const formData = new FormData();
+      formData.append("file", input.files[0]);
+
+      try {
+        const response = await fetch("http://localhost:5069/api/datos", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const result = await response.json();
+        const { nombres, apellidos, fechaNacimiento } = result.data;
+        if (nombres) {
+          setValue("name", nombres);
+        }
+        if (apellidos) {
+          setValue("lastName", apellidos);
+        }
+        if (fechaNacimiento) {
+          setValue("birthdate", fechaNacimiento);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    } else {
+      console.error("No file selected");
+    }
+  };
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
-      <input
-        type="text"
-        placeholder="Ingrese el nombre del jugador"
-        {...register("name")}
-      />
-      <p>{errors.name?.message}</p>
-      <input
-        type="text"
-        placeholder="Ingrese el apellido del jugador"
-        {...register("lastName")}
-      />
-      <p>{errors.lastName?.message}</p>
-      <input
-        type="date"
-        placeholder="ingrese la fecha de nacimiento del jugador"
-        {...register("birthdate")}
-      />
-      <p>{errors.birthdate?.message}</p>
-      <input
-        type="text"
-        placeholder="Ingrese la nacionalidad del jugador"
-        {...register("nationality")}
-      />
-      <p>{errors.nationality?.message}</p>
-      <input
-        type="text"
-        placeholder="Ingrese el commet del jugador"
-        {...register("commet")}
-      />
-      <p>{errors.commet?.message}</p>
-      <select {...register("gender")}>
-        <option value="">Seleccione genero</option>
-        <option value="male">Hombre</option>
-        <option value="female">Mujer</option>
-      </select>
-      <p>{errors.gender?.message}</p>
+    <>
+      {!player && (
+        <>
+          <label htmlFor="InputEscanear" className="cursor-pointer">
+            <button className="pointer-events-none">Escanear datos</button>
+          </label>
+          <input
+            id="InputEscanear"
+            type="file"
+            placeholder="Escanear datos"
+            className="hidden"
+            onChange={handleGetScanResult}
+          />
+        </>
+      )}
 
-      <select {...register("clubId")}>
-        <option value="">Seleccione el club</option>
-        {clubs?.map((c) => (
-          <option key={c.clubId} value={c.clubId}>
-            {c.value}
-          </option>
-        ))}
-      </select>
-      <p>{errors.gender?.message}</p>
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
+        <input
+          type="text"
+          placeholder="Ingrese el nombre del jugador"
+          {...register("name")}
+        />
+        <p>{errors.name?.message}</p>
+        <input
+          type="text"
+          placeholder="Ingrese el apellido del jugador"
+          {...register("lastName")}
+        />
+        <p>{errors.lastName?.message}</p>
+        <input
+          type="date"
+          placeholder="ingrese la fecha de nacimiento del jugador"
+          {...register("birthdate")}
+        />
+        <p>{errors.birthdate?.message}</p>
+        <input
+          type="text"
+          placeholder="Ingrese la nacionalidad del jugador"
+          {...register("nationality")}
+        />
+        <p>{errors.nationality?.message}</p>
+        <input
+          type="text"
+          placeholder="Ingrese el commet del jugador"
+          {...register("commet")}
+        />
+        <p>{errors.commet?.message}</p>
+        <select {...register("gender")}>
+          <option value="">Seleccione genero</option>
+          <option value="male">Hombre</option>
+          <option value="female">Mujer</option>
+        </select>
+        <p>{errors.gender?.message}</p>
 
-      <button type="submit">
-        {player ? "Editar Jugador" : "Registrar Jugador"}
-      </button>
-    </form>
+        <select {...register("clubId")}>
+          <option value="">Seleccione el club</option>
+          {clubs?.map((c) => (
+            <option key={c.clubId} value={c.clubId}>
+              {c.value}
+            </option>
+          ))}
+        </select>
+        <p>{errors.gender?.message}</p>
+
+        <button type="submit">
+          {player ? "Editar Jugador" : "Registrar Jugador"}
+        </button>
+      </form>
+    </>
   );
 };
 

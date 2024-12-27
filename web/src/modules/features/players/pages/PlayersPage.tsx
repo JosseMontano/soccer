@@ -51,7 +51,7 @@ const PlayersPage = () => {
       header: "Apellido",
     },
     {
-      accessorFn: (row) => (row.birthdate.split("T")[0]),
+      accessorFn: (row) => row.birthdate.split("T")[0],
       header: "Fecha de nacimiento",
     },
     {
@@ -125,6 +125,7 @@ const PlayersPage = () => {
               >
                 Añadir jugador
               </Button>
+              
             );
           }
           return null;

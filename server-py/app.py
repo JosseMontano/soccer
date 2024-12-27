@@ -10,11 +10,16 @@ from sklearn.model_selection import train_test_split
 import pytesseract
 from PIL import Image
 
+
+
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+
 # Create FastAPI instance
 app = FastAPI()
 
 # Configure CORS
-origins = ["https://soccer-back.vercel.app","http://localhost:5173", "http://localhost:8000","exp://192.168.1.13:19000"]
+origins = ["https://soccer-back.vercel.app","http://localhost:5173","http://localhost:5069", "http://localhost:8000","exp://192.168.1.13:19000"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
