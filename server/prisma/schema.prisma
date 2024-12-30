@@ -158,6 +158,7 @@ model Game {
   foulsFirstTeam        Int      @default(0)
   foulsSecondTeam       Int      @default(0)
   winnerId              String? // Optional winner field
+  state                 String   @default("pendiente") // Estado del partido ("pendiente", "jugando", "finalizado")
 
   tournament Tournaments @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
 

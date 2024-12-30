@@ -253,89 +253,123 @@ export function gameRoutes(router: FastifyInstance) {
     }
   });
 
-  // Agregar o disminuir goles de un equipo
-  router.put(
-    `${endPointGameEvents}/:gameId/goals`,
-    async (request, reply) => {
-      try {
-        const { gameId } = request.params as { gameId: string };
-        const { team, action } = request.body as {
-          team: "firstTeam" | "secondTeam";
-          action: "increment" | "decrement";
-        };
+  router.put(`${endPointGameEvents}/:gameId/finish`, async (request, reply) => {
+    const { gameId } = request.params as { gameId: string }; //request.params son los parametros de mi ruta
+    const game = await prisma.game.findUnique({
+      where: { id: gameId },
+    });
+    if (!game) {
+      return reply.status(404).send({
+        message: "El partido no existe.",
+      });
+    }
+    const gameWinner =
+      game.goalsFirstTeam > game.goalsSecondTeam
+        ? game.firstTeamId
+        : game.goalsFirstTeam < game.goalsSecondTeam
+        ? game.secondTeamId
+        : null;
 
-        // Validar que los parámetros sean correctos
-        if (!["firstTeam", "secondTeam"].includes(team)) {
-          return reply.status(400).send({
-            message: "El equipo debe ser 'firstTeam' o 'secondTeam'.",
-          });
-        }
-        if (!["increment", "decrement"].includes(action)) {
-          return reply.status(400).send({
-            message: "La acción debe ser 'increment' o 'decrement'.",
-          });
-        }
-
-        // Validar existencia del partido
-        const game = await prisma.game.findUnique({
-          where: { id: gameId },
-        });
-
-        if (!game) {
-          return reply.status(404).send({
-            message: "El partido no existe.",
-          });
-        }
-
-        // Actualizar goles del equipo correspondiente, action can be increment o decrement
-        const updateData =
-          team === "firstTeam"
-            ? { goalsFirstTeam: { [action]: 1 } }
-            : { goalsSecondTeam: { [action]: 1 } };
-
-        const updatedGame = await prisma.game.update({
-          where: { id: gameId },
-          data: updateData,
+    const updatedGame = await prisma.game.update({
+      where : { id: gameId },
+      data: {
+        winnerId: gameWinner,
+        state: "finalizado",
+      },
+      include: {
+        firstTeam: {
           include: {
-            firstTeam: {
-              include: {
-                players: true, // Include players of the first team
-              },
-            },
-            secondTeam: {
-              include: {
-                players: true, // Include players of the second team
-              },
-            }
-          }
-        });
+            players: true, // Include players of the first team
+          },
+        },
+        secondTeam: {
+          include: {
+            players: true, // Include players of the second team
+          },
+        },
+      },
+    });
+    return reply.status(200).send({
+      message: "Partido finalizado exitosamente",
+      data: updatedGame,
+    });
+  });
 
+  // Agregar o disminuir goles de un equipo
+  router.put(`${endPointGameEvents}/:gameId/goals`, async (request, reply) => {
+    try {
+      const { gameId } = request.params as { gameId: string };
+      const { team, action } = request.body as {
+        team: "firstTeam" | "secondTeam";
+        action: "increment" | "decrement";
+      };
 
-        await pusher.trigger(
-          'goal-channel', 
-          `new-goal`, 
-          {
-            tournamentId: updatedGame.tournamentId,
-            gameId: updatedGame.id,
-            team,
-            action,
-            newGoals: {
-              firstTeam: updatedGame.goalsFirstTeam,
-              secondTeam: updatedGame.goalsSecondTeam
-            }[team]
-          }
-        );
-        const response: ResponseType = {
-          message: `Goles del equipo ${team} actualizados exitosamente.`,
-          data: updatedGame,
-          status: 200,
-        };
-        return reply.status(200).send(response);
-      } catch (error) {
-        return reply.status(500).send({
-          message: `Server error: ${error}`,
+      // Validar que los parámetros sean correctos
+      if (!["firstTeam", "secondTeam"].includes(team)) {
+        return reply.status(400).send({
+          message: "El equipo debe ser 'firstTeam' o 'secondTeam'.",
         });
       }
+      if (!["increment", "decrement"].includes(action)) {
+        return reply.status(400).send({
+          message: "La acción debe ser 'increment' o 'decrement'.",
+        });
+      }
+
+      // Validar existencia del partido
+      const game = await prisma.game.findUnique({
+        where: { id: gameId },
+      });
+
+      if (!game) {
+        return reply.status(404).send({
+          message: "El partido no existe.",
+        });
+      }
+
+      // Actualizar goles del equipo correspondiente, action can be increment o decrement
+      const updateData =
+        team === "firstTeam"
+          ? { goalsFirstTeam: { [action]: 1 } }
+          : { goalsSecondTeam: { [action]: 1 } };
+
+      const updatedGame = await prisma.game.update({
+        where: { id: gameId },
+        data: updateData,
+        include: {
+          firstTeam: {
+            include: {
+              players: true, // Include players of the first team
+            },
+          },
+          secondTeam: {
+            include: {
+              players: true, // Include players of the second team
+            },
+          },
+        },
+      });
+
+      await pusher.trigger("goal-channel", `new-goal`, {
+        tournamentId: updatedGame.tournamentId,
+        gameId: updatedGame.id,
+        team,
+        action,
+        newGoals: {
+          firstTeam: updatedGame.goalsFirstTeam,
+          secondTeam: updatedGame.goalsSecondTeam,
+        }[team],
+      });
+      const response: ResponseType = {
+        message: `Goles del equipo ${team} actualizados exitosamente.`,
+        data: updatedGame,
+        status: 200,
+      };
+      return reply.status(200).send(response);
+    } catch (error) {
+      return reply.status(500).send({
+        message: `Server error: ${error}`,
+      });
     }
-  );
+  });
 }

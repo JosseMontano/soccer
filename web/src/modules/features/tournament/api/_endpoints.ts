@@ -1,3 +1,4 @@
+import { Game } from "../../game/api/responses";
 import { TournamentDTO } from "./dtos";
 import { Tournament, TournamentFixture } from "./responses";
 
@@ -22,6 +23,11 @@ declare global {
       params: { id: string };
       request: null;
       response: Tournament;
+    };
+    "PUT /games/events/:gameId/finish": {
+      params: { gameId: string };
+      request: null;
+      response: Game;
     };
     "PUT /tournaments/:id": {
       params: { id: string };

@@ -34,6 +34,7 @@ export interface Tournament {
     foulsFirstTeam: number;
     foulsSecondTeam: number;
     winnerId: string | null;
+    state: "finalizado" | "pendiente";
 
     firstTeam: Team;
     secondTeam: Team;
@@ -93,6 +94,7 @@ export interface TournamentFixture {
     foulsFirstTeam: number;
     foulsSecondTeam: number;
     winnerId: string | null;
+    state: "finalizado" | "pendiente";
 
     firstTeam: Team;
     secondTeam: Team;
