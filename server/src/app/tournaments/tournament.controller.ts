@@ -21,6 +21,9 @@ export function tournamentRoutes(router: FastifyInstance) {
           finalFormat: true,
           category: true,
           games: {
+            orderBy: {
+              date: "asc",
+            },
             include: {
               firstTeam: {
                 include: {
@@ -51,34 +54,31 @@ export function tournamentRoutes(router: FastifyInstance) {
     }
   });
 
-  router.get(
-    `${endPointTournaments}/info-club`, async (request, reply) => {
-      const { clubId, tournamentId } = request.query as { clubId: string, tournamentId: string };
+  router.get(`${endPointTournaments}/info-club`, async (request, reply) => {
+    const { clubId, tournamentId } = request.query as {
+      clubId: string;
+      tournamentId: string;
+    };
 
+    // Fetch all games to calculate total victories
+    const allGames = await prisma.game.findMany({
+      where: {
+        OR: [{ firstTeamId: clubId }, { secondTeamId: clubId }],
+        tournamentId: { not: tournamentId },
+      },
+      include: {
+        firstTeam: true,
+        secondTeam: true,
+      },
+    });
 
-      // Fetch all games to calculate total victories
-      const allGames = await prisma.game.findMany({
-        where: {
-          OR: [
-            { firstTeamId: clubId },
-            { secondTeamId: clubId },
-          ],
-          tournamentId: { not: tournamentId }
-        },
-        include: {
-          firstTeam: true,
-          secondTeam: true
-        }
-      });
-
-      const response: ResponseType = {
-        message: "Informacion del club obtenida exitosamente",
-        data: allGames,
-        status: 200,
-      };
-      return reply.status(200).send(response);
-    }
-  )
+    const response: ResponseType = {
+      message: "Informacion del club obtenida exitosamente",
+      data: allGames,
+      status: 200,
+    };
+    return reply.status(200).send(response);
+  });
 
   router.get(
     `${endPointTournaments}/tournamentsPublic`,
@@ -86,9 +86,9 @@ export function tournamentRoutes(router: FastifyInstance) {
       const { date } = request.query as { date: string };
       const selectedDate = date ? new Date(date) : new Date(); // Crear un rango para la fecha seleccionada
       const startOfDay = new Date(selectedDate);
-      startOfDay.setHours(0, 0, 0, 0); // Inicio del día
+      startOfDay.setUTCHours(4, 0, 0, 0); // Inicio del día en UTC-4
       const endOfDay = new Date(selectedDate);
-      endOfDay.setHours(23, 59, 59, 999); // Fin del día
+      endOfDay.setUTCHours(27, 59, 59, 999); // Fin del día en UTC-4
 
       try {
         const tournaments = await prisma.tournaments.findMany({
@@ -101,12 +101,16 @@ export function tournamentRoutes(router: FastifyInstance) {
                 },
               },
             },
+            fixtureGenerated: true,
           },
           include: {
             format: true,
             finalFormat: true,
             category: true,
             games: {
+              orderBy: {
+                date: "asc",
+              },
               where: {
                 date: {
                   gte: startOfDay, // Mayor o igual al inicio del día
@@ -143,7 +147,6 @@ export function tournamentRoutes(router: FastifyInstance) {
 
         //console.log(allGames);
         // Fetch the last 5 games for each team, excluding the current tournament
-
 
         const teamHistories: Record<string, any[]> = {};
         for (const game of allGames) {
@@ -241,6 +244,9 @@ export function tournamentRoutes(router: FastifyInstance) {
           finalFormat: true,
           category: true,
           games: {
+            orderBy: {
+              date: "asc",
+            },
             include: {
               firstTeam: {
                 include: {
@@ -339,6 +345,9 @@ export function tournamentRoutes(router: FastifyInstance) {
           finalFormat: true,
           category: true,
           games: {
+            orderBy: {
+              date: "asc",
+            },
             include: {
               firstTeam: {
                 include: {
@@ -404,6 +413,7 @@ export function tournamentRoutes(router: FastifyInstance) {
     `${endPointTournaments}/:id/generate-fixture`,
     async (request, reply) => {
       try {
+        console.log("Hola wapo");
         const { id } = request.params as { id: string };
 
         const tournament = await prisma.tournaments.findUnique({
@@ -414,6 +424,11 @@ export function tournamentRoutes(router: FastifyInstance) {
                 club: true,
               },
             },
+            games: {
+              include: {
+                winner: true,
+              },
+            },
           },
         });
 
@@ -421,17 +436,78 @@ export function tournamentRoutes(router: FastifyInstance) {
           return reply.status(404).send({ message: "Torneo no encontrado." });
         }
 
-        const teams = tournament.tournamentClubs.map(
-          (clubCategory) => clubCategory.club
-        );
+        let teams: {
+          id: string;
+          name: string;
+          logo: string | null;
+        }[] = [];
+        let gamesOfLastPhase: any[] | null = null;
+
+        let nextPhase: string | null = null;
+
+        if (tournament.games.length > 0) {
+          const phases = ["grupos", "octavos", "cuartos", "semis", "final"];
+          const lastPhase = tournament.games.reduce((last, game) => {
+            const currentPhaseIndex = phases.indexOf(game.phase);
+            const lastPhaseIndex = phases.indexOf(last);
+            return currentPhaseIndex > lastPhaseIndex ? game.phase : last;
+          }, "grupos");
+          const indexOfLastPhase = phases.indexOf(lastPhase);
+          nextPhase = phases[indexOfLastPhase + 1];
+
+          gamesOfLastPhase = tournament.games.filter(
+            (game) => game.phase === lastPhase
+          );
+
+          const phasesOfTournament = tournament.games.map((game) => game.phase);
+          const uniquePhases = new Set(phasesOfTournament);
+          const phaseCount = uniquePhases.size;
+
+          if (phaseCount >= 2) {
+            const passedPhase = phases[indexOfLastPhase - 1];
+            const lastDefaultPassed = tournament.games.find(
+              (game) => game.phase === passedPhase && game.defaultPass
+            );
+            if (lastDefaultPassed) {
+              gamesOfLastPhase.push(lastDefaultPassed);
+            }
+          }
+
+          teams = gamesOfLastPhase
+            .map((game) => {
+              return game.winner;
+            })
+            .filter((v) => !!v);
+        } else {
+          teams = tournament.tournamentClubs.map(
+            (clubCategory) => clubCategory.club
+          );
+        }
+
         if (teams.length < 2) {
           return reply.status(400).send({
             message:
-              "El torneo debe tener al menos 2 equipos registrados para generar el fixture.",
+              "El torneo debe tener al menos 2 equipos registrados 1ra generar el fixture.",
           });
         }
 
-        if (teams.length % 2 !== 0) {
+        let shuffledTeams = teams.sort(() => Math.random() - 0.5);
+
+        if (gamesOfLastPhase && shuffledTeams.length % 2 !== 0) {
+          const firstTeam = shuffledTeams[0];
+          const gameOfFirstTeam = gamesOfLastPhase.find(
+            (game) => game.winnerId === firstTeam.id
+          );
+          await prisma.game.update({
+            where: { id: gameOfFirstTeam.id },
+            data: {
+              defaultPass: true,
+            },
+          });
+          shuffledTeams = shuffledTeams.slice(1);
+        }
+
+        if (shuffledTeams.length % 2 !== 0 && tournament.games.length > 0) {
           return reply.status(400).send({
             message:
               "El número de equipos debe ser par para generar el fixture. Registre un equipo adicional.",
@@ -439,21 +515,33 @@ export function tournamentRoutes(router: FastifyInstance) {
         }
 
         // Distribuir fechas de partidos entre las fechas de inicio y fin del torneo
-        const totalDays = Math.ceil(
+        /* const totalDays = Math.ceil(
           (new Date(tournament.dateEnd).getTime() -
             new Date(tournament.dateStart).getTime()) /
-          86400000
+            86400000
         );
         if (totalDays < teams.length / 2) {
           return reply.status(400).send({
             message:
               "El rango de fechas del torneo no es suficiente para programar todos los partidos.",
           });
-        }
+        } */
 
-        const shuffledTeams = teams.sort(() => Math.random() - 0.5); // Mezclar los equipos aleatoriamente
         const fixtures = [];
         let currentDate = new Date(tournament.dateStart);
+        currentDate.setHours(currentDate.getHours() + 4);
+
+        const initialPhase =
+          nextPhase ??
+          (teams.length <= 2
+            ? "final"
+            : teams.length <= 4
+            ? "semis"
+            : teams.length <= 8
+            ? "cuartos"
+            : teams.length <= 16
+            ? "octavos"
+            : "grupos");
 
         for (let i = 0; i < shuffledTeams.length; i += 2) {
           if (i + 1 < shuffledTeams.length) {
@@ -463,7 +551,7 @@ export function tournamentRoutes(router: FastifyInstance) {
             fixtures.push({
               firstTeamId: shuffledTeams[i].id,
               secondTeamId: shuffledTeams[i + 1].id,
-              date: new Date(currentDate), // Asignar la fecha actual al partido
+              date: new Date(currentDate),
               tournamentId: id,
               goalsFirstTeam: 0,
               goalsSecondTeam: 0,
@@ -473,10 +561,11 @@ export function tournamentRoutes(router: FastifyInstance) {
               redCardsSecondTeam: 0,
               foulsFirstTeam: 0,
               foulsSecondTeam: 0,
+              phase: initialPhase,
             });
 
             // Incrementar la fecha en 1 día
-            currentDate.setDate(currentDate.getDate() + 1);
+            /* currentDate.setDate(currentDate.getDate() + 1); */
           }
         }
 
@@ -500,6 +589,9 @@ export function tournamentRoutes(router: FastifyInstance) {
             finalFormat: true,
             category: true,
             games: {
+              orderBy: {
+                date: "asc",
+              },
               include: {
                 firstTeam: {
                   include: {
@@ -523,6 +615,81 @@ export function tournamentRoutes(router: FastifyInstance) {
         };
         return reply.status(201).send(response);
       } catch (error) {
+        if (error instanceof Error) {
+          return reply
+            .status(500)
+            .send({ message: "Error del servidor: " + error.message });
+        }
+      }
+    }
+  );
+
+  router.put(
+    `${endPointTournaments}/:id/edit-fixture`,
+    async (request, reply) => {
+      try {
+        const { id } = request.params as { id: string };
+        const fixtures = request.body as { id: string; date: string }[];
+
+        const tournament = await prisma.tournaments.findUnique({
+          where: { id },
+        });
+
+        if (!tournament) {
+          return reply.status(404).send({ message: "Torneo no encontrado." });
+        }
+
+        const updatedFixtures = await Promise.all(
+          fixtures.map(async (fixture) => {
+            return await prisma.game.update({
+              where: { id: fixture.id },
+              data: { date: new Date(fixture.date) },
+            });
+          })
+        );
+
+        const tournamentRes = await prisma.tournaments.findUnique({
+          where: {
+            id,
+          },
+          include: {
+            format: true,
+            finalFormat: true,
+            category: true,
+            games: {
+              orderBy: {
+                date: "asc",
+              },
+              include: {
+                firstTeam: {
+                  include: {
+                    players: true, // Include players of the first team
+                  },
+                },
+                secondTeam: {
+                  include: {
+                    players: true, // Include players of the second team
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        const response: ResponseType = {
+          message: "Fixture actualizado exitosamente.",
+          data: tournamentRes,
+          status: 200,
+        };
+
+        return reply.status(200).send(response);
+      } catch (error) {
+        if (error instanceof ZodError) {
+          return reply.status(400).send({
+            message: "Error de validación",
+            errors: error.errors,
+          });
+        }
         if (error instanceof Error) {
           return reply
             .status(500)

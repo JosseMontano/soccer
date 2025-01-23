@@ -131,6 +131,7 @@ model Tournaments {
   format          Format           @relation("TournamentFormat", fields: [formatId], references: [id]) // Formato del torneo
   finalFormat     Format?          @relation("FinalFormat", fields: [finalFormatId], references: [id]) // Formato de la final (opcional)
   category        Categories       @relation(fields: [categoryId], references: [id]) // Categoría del torneo
+  
   tournamentClubs TournamentClub[]
 }
 
@@ -139,8 +140,8 @@ model TournamentClub {
   tournamentId String
   clubId       String
 
-  tournament Tournaments @relation(fields: [tournamentId], references: [id])
-  club       Club        @relation(fields: [clubId], references: [id])
+  tournament Tournaments @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  club       Club        @relation(fields: [clubId], references: [id], onDelete: Cascade)
 }
 
 model Game {
@@ -159,6 +160,8 @@ model Game {
   foulsSecondTeam       Int      @default(0)
   winnerId              String? // Optional winner field
   state                 String   @default("pendiente") // Estado del partido ("pendiente", "jugando", "finalizado")
+  phase                 String   @default("grupos") // Fase del torneo
+  defaultPass           Boolean  @default(false) // Indica si el partido pasa por default
 
   tournament Tournaments @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
 

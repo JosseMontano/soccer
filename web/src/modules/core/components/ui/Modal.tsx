@@ -16,11 +16,20 @@ interface Props {
   title: string;
   description: string;
   button: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-const Modal = ({ children, title, description, button }: Props) => {
+const Modal = ({
+  children,
+  title,
+  description,
+  button,
+  onOpenChange,
+  open,
+}: Props) => {
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>{button}</DialogTrigger>
       <DialogContent>
         <DialogHeader>

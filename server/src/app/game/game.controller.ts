@@ -269,6 +269,11 @@ export function gameRoutes(router: FastifyInstance) {
         : game.goalsFirstTeam < game.goalsSecondTeam
         ? game.secondTeamId
         : null;
+    if (!gameWinner) {
+      return reply.status(404).send({
+        message: "Tiene que haber un ganador.",
+      });
+    }
 
     const updatedGame = await prisma.game.update({
       where : { id: gameId },

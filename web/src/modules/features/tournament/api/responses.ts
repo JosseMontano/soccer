@@ -5,8 +5,8 @@ export interface Team {
   name: string;
   logo: string;
   players: Player[];
-  amountVictories: number; 
-  history: TeamHistoryGame[]; 
+  amountVictories: number;
+  history: TeamHistoryGame[];
 }
 export interface Tournament {
   id: string;
@@ -35,6 +35,7 @@ export interface Tournament {
     foulsSecondTeam: number;
     winnerId: string | null;
     state: "finalizado" | "pendiente";
+    phase: "grupos" | "octavos" | "cuartos" | "semis" | "final" | "1";
 
     firstTeam: Team;
     secondTeam: Team;
@@ -58,14 +59,36 @@ export interface TeamHistoryGame {
   winnerId: string | null;
   firstTeam: {
     id: string;
-    name: string; 
+    name: string;
     logo: string;
   };
   secondTeam: {
     id: string;
-    name: string; 
+    name: string;
     logo: string;
   };
+}
+
+export interface TournamentFixtureGame {
+  id: string;
+  firstTeamId: string;
+  secondTeamId: string;
+  tournamentId: string;
+  date: string;
+  goalsFirstTeam: number;
+  goalsSecondTeam: number;
+  yellowCardsFirstTeam: number;
+  yellowCardsSecondTeam: number;
+  redCardsFirstTeam: number;
+  redCardsSecondTeam: number;
+  foulsFirstTeam: number;
+  foulsSecondTeam: number;
+  winnerId: string | null;
+  state: "finalizado" | "pendiente";
+  phase: "grupos" | "octavos" | "cuartos" | "semis" | "final" | "1";
+
+  firstTeam: Team;
+  secondTeam: Team;
 }
 
 export interface TournamentFixture {
@@ -79,24 +102,5 @@ export interface TournamentFixture {
   categoryId: string;
   status: string;
   fixtureGenerated: boolean;
-  games: {
-    id: string;
-    firstTeamId: string;
-    secondTeamId: string;
-    tournamentId: string;
-    date: string;
-    goalsFirstTeam: number;
-    goalsSecondTeam: number;
-    yellowCardsFirstTeam: number;
-    yellowCardsSecondTeam: number;
-    redCardsFirstTeam: number;
-    redCardsSecondTeam: number;
-    foulsFirstTeam: number;
-    foulsSecondTeam: number;
-    winnerId: string | null;
-    state: "finalizado" | "pendiente";
-
-    firstTeam: Team;
-    secondTeam: Team;
-  }[];
+  games: TournamentFixtureGame[];
 }

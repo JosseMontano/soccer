@@ -24,6 +24,14 @@ declare global {
       request: null;
       response: Tournament;
     };
+    "PUT /tournaments/:id/edit-fixture": {
+      params: { id: string };
+      request: {
+        id: string;
+        date: string;
+      }[];
+      response: Tournament;
+    };
     "PUT /games/events/:gameId/finish": {
       params: { gameId: string };
       request: null;
