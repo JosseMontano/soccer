@@ -119,8 +119,18 @@ const TournamentTableRow = ({
   //@ts-ignore
   const gamesByDate = Object.groupBy(
     tournament.games,
-    (game: TournamentFixtureGame) => game.date.split("T")[0]
+    (game: TournamentFixtureGame) => {
+      const date = new Date(game.date);
+      date.setHours(date.getHours() - 4);
+      return date.toISOString().split("T")[0];
+    }
   ) as Record<string, TournamentFixtureGame[]>;
+
+  const renderedGames: {
+    fase: string;
+    primerEquipo: string;
+    segundoEquipo: string;
+  }[] = [];
 
   return (
     <div className="flex flex-col">
@@ -182,212 +192,72 @@ const TournamentTableRow = ({
                 </p>
               </header>
               <main className="flex flex-col bg-gray-900">
-                {gamesByDate[date].map((game) => (
-                  <div className="flex flex-col items-center w-full border-t py-2">
-                    <div className="flex justify-between w-full px-10">
-                      <small className="opacity-60">
-                        Horario del partido:{" "}
-                        {new Date(game.date).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                        <span className="text-skyblue-500">
-                          {game.phase !== "grupos" && game.phase !== "1"
-                            ? ` (${game.phase})`
-                            : ""}
-                        </span>
-                      </small>
-                      <small>
-                        {
+                {gamesByDate[date].map((game) => {
+                  const exist = renderedGames.find(
+                    (rg) =>
+                      rg.fase === game.phase &&
+                      rg.primerEquipo === game.firstTeamId &&
+                      rg.segundoEquipo === game.secondTeamId
+                  );
+                  if (!exist) {
+                    renderedGames.push({
+                      fase: game.phase,
+                      primerEquipo: game.firstTeamId,
+                      segundoEquipo: game.secondTeamId,
+                    });
+                  }
+
+                  const esIdaYVuelta =
+                    game.phase === "final"
+                      ? tournament.finalFormatId === "ida-vuelta-uuid"
+                      : tournament.formatId === "ida-vuelta-uuid";
+                  const idaOVuelta = esIdaYVuelta
+                    ? exist
+                      ? "vuelta"
+                      : "ida"
+                    : null;
+
+                  return (
+                    <div className="flex flex-col items-center w-full border-t py-2">
+                      <div className="flex justify-between w-full px-10">
+                        <small className="opacity-60">
+                          Horario del partido:{" "}
+                          {new Date(game.date).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                          <span className="text-skyblue-500">
+                            {game.phase !== "grupos" && game.phase !== "1"
+                              ? ` (${game.phase})`
+                              : ""}
+                          </span>{" "}
+                          {idaOVuelta && (
+                            <span className="text-amber-500">
+                              ({idaOVuelta})
+                            </span>
+                          )}
+                        </small>
+                        <small>
                           {
-                            pendiente: "proximo 🟡",
-                            finalizado: "finalizado 🟢",
-                          }[game.state]
-                        }
-                      </small>
-                    </div>
-                    <div className="flex items-center w-full  gap-8 py-3 justify-center">
-                      <div
-                        className={clsx("w-56 flex items-center gap-4", {
-                          "opacity-20":
-                            game.winnerId !== game.firstTeamId &&
-                            game.winnerId !== null,
-                        })}
-                      >
-                        {showInfo && (
-                          <Modal
-                            title={
-                              "Informacion del equipo " + game.firstTeam.name
-                            }
-                            description="Informacion de los integrantes y historial de los ultimos 5 partidos"
-                            button={
-                              <span className="cursor-pointer">
-                                <Icon type={Icon.Types.INFO} />
-                              </span>
-                            }
-                          >
-                            <div>
-                              <img
-                                src={game.firstTeam.logo}
-                                className="object-cover rounded-2xl"
-                                width={85}
-                                height={85}
-                              />
-                              <h2 className="text-[22px] font-semibold">
-                                Jugadores
-                              </h2>
-                              {game.firstTeam.players.map((v) => (
-                                <p className="text-[13px]">
-                                  {v.name} {v.lastName}
-                                </p>
-                              ))}
-                            </div>
-
-                            <div>
-                              {" "}
-                              <span
-                                className="cursor-pointer"
-                                onClick={() =>
-                                  onSubmit(
-                                    game.firstTeam.amountVictories,
-                                    game.secondTeam.amountVictories
-                                  )
-                                }
-                              >
-                                <Prediction
-                                  amountVictories1={
-                                    game.firstTeam.amountVictories
-                                  }
-                                  amountVictories2={
-                                    game.secondTeam.amountVictories
-                                  }
-                                  prediction={prediction}
-                                  onSubmit={onSubmit}
-                                  game={game}
-                                  setPrediction={setPrediction}
-                                />
-                              </span>
-                            </div>
-
-                            <HistoryTable
-                              clubId={game.firstTeam.id}
-                              tournamentId={game.tournamentId}
-                            />
-                          </Modal>
-                        )}
-
-                        <div className="bg-gray-800 px-2 py-2 min-w-16 max-w-16 aspect-square rounded-xl">
-                          <img
-                            src={game.firstTeam.logo || DefaulShield}
-                            className="w-full h-full object-contain"
-                          />
-                        </div>
-                        <p className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">
-                          {game.firstTeam.name}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col items-center">
-                        <span>{game.goalsFirstTeam}</span>
-                        {editable && game.state === "pendiente" && (
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={() =>
-                                handleGameGoal(
-                                  game.id,
-                                  "firstTeam",
-                                  "decrement",
-                                  game.goalsFirstTeam
-                                )
-                              }
-                              className="text-xs"
-                              variant={"ghost"}
-                            >
-                              -
-                            </Button>
-                            <Button
-                              onClick={() =>
-                                handleGameGoal(
-                                  game.id,
-                                  "firstTeam",
-                                  "increment",
-                                  game.goalsFirstTeam
-                                )
-                              }
-                              className="text-xs"
-                              variant={"ghost"}
-                            >
-                              +
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="bg-gray-800 px-2 py-2 w-10 aspect-square rounded-full flex items-center justify-center">
-                        VS
-                      </div>
-
-                      <div className="flex flex-col items-center">
-                        <span>{game.goalsSecondTeam}</span>
-                        {editable && game.state === "pendiente" && (
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={() =>
-                                handleGameGoal(
-                                  game.id,
-                                  "secondTeam",
-                                  "decrement",
-                                  game.goalsSecondTeam
-                                )
-                              }
-                              className="text-xs"
-                              variant={"ghost"}
-                            >
-                              -
-                            </Button>
-                            <Button
-                              onClick={() =>
-                                handleGameGoal(
-                                  game.id,
-                                  "secondTeam",
-                                  "increment",
-                                  game.goalsSecondTeam
-                                )
-                              }
-                              className="text-xs"
-                              variant={"ghost"}
-                            >
-                              +
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-
-                      <div
-                        className={clsx(
-                          "w-56 flex items-center gap-4 justify-end",
-                          {
-                            "opacity-20":
-                              game.winnerId !== game.secondTeamId &&
-                              game.winnerId !== null,
+                            {
+                              pendiente: "proximo 🟡",
+                              finalizado: "finalizado 🟢",
+                            }[game.state]
                           }
-                        )}
-                      >
-                        <p className="flex-1 text-end whitespace-nowrap overflow-hidden text-ellipsis">
-                          {game.secondTeam.name}
-                        </p>
-                        <div className="bg-gray-800 px-2 py-2 min-w-16 max-w-16 aspect-square rounded-xl">
-                          <img
-                            className="w-full h-full object-contain"
-                            src={game.secondTeam.logo || DefaulShield}
-                          />
-                        </div>
-
-                        {showInfo && (
-                          <span className="cursor-pointer">
+                        </small>
+                      </div>
+                      <div className="flex items-center w-full  gap-8 py-3 justify-center">
+                        <div
+                          className={clsx("w-56 flex items-center gap-4", {
+                            "opacity-20":
+                              game.winnerId !== game.firstTeamId &&
+                              game.winnerId !== null,
+                          })}
+                        >
+                          {showInfo && (
                             <Modal
                               title={
-                                "Informacion del equipo " + game.secondTeam.name
+                                "Informacion del equipo " + game.firstTeam.name
                               }
                               description="Informacion de los integrantes y historial de los ultimos 5 partidos"
                               button={
@@ -398,7 +268,7 @@ const TournamentTableRow = ({
                             >
                               <div>
                                 <img
-                                  src={game.secondTeam.logo}
+                                  src={game.firstTeam.logo}
                                   className="object-cover rounded-2xl"
                                   width={85}
                                   height={85}
@@ -406,45 +276,217 @@ const TournamentTableRow = ({
                                 <h2 className="text-[22px] font-semibold">
                                   Jugadores
                                 </h2>
-                                {game.secondTeam.players.map((v) => (
-                                  <p>
+                                {game.firstTeam.players.map((v) => (
+                                  <p className="text-[13px]">
                                     {v.name} {v.lastName}
                                   </p>
                                 ))}
                               </div>
 
-                              <Prediction
-                                amountVictories1={
-                                  game.secondTeam.amountVictories
-                                }
-                                amountVictories2={
-                                  game.firstTeam.amountVictories
-                                }
-                                prediction={prediction}
-                                onSubmit={onSubmit}
-                                game={game}
-                                setPrediction={setPrediction}
-                              />
+                              <div>
+                                {" "}
+                                <span
+                                  className="cursor-pointer"
+                                  onClick={() =>
+                                    onSubmit(
+                                      game.firstTeam.amountVictories,
+                                      game.secondTeam.amountVictories
+                                    )
+                                  }
+                                >
+                                  <Prediction
+                                    amountVictories1={
+                                      game.firstTeam.amountVictories
+                                    }
+                                    amountVictories2={
+                                      game.secondTeam.amountVictories
+                                    }
+                                    prediction={prediction}
+                                    onSubmit={onSubmit}
+                                    game={game}
+                                    setPrediction={setPrediction}
+                                  />
+                                </span>
+                              </div>
 
                               <HistoryTable
-                                clubId={game.secondTeam.id}
+                                clubId={game.firstTeam.id}
                                 tournamentId={game.tournamentId}
                               />
                             </Modal>
-                          </span>
-                        )}
+                          )}
+
+                          <div className="bg-gray-800 px-2 py-2 min-w-16 max-w-16 aspect-square rounded-xl">
+                            <img
+                              src={game.firstTeam.logo || DefaulShield}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                          <p className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">
+                            {game.firstTeam.name}
+                          </p>
+                        </div>
+
+                        <div className="flex flex-col items-center">
+                          <span>{game.goalsFirstTeam}</span>
+                          {editable && game.state === "pendiente" && (
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() =>
+                                  handleGameGoal(
+                                    game.id,
+                                    "firstTeam",
+                                    "decrement",
+                                    game.goalsFirstTeam
+                                  )
+                                }
+                                className="text-xs"
+                                variant={"ghost"}
+                              >
+                                -
+                              </Button>
+                              <Button
+                                onClick={() =>
+                                  handleGameGoal(
+                                    game.id,
+                                    "firstTeam",
+                                    "increment",
+                                    game.goalsFirstTeam
+                                  )
+                                }
+                                className="text-xs"
+                                variant={"ghost"}
+                              >
+                                +
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="bg-gray-800 px-2 py-2 w-10 aspect-square rounded-full flex items-center justify-center">
+                          VS
+                        </div>
+
+                        <div className="flex flex-col items-center">
+                          <span>{game.goalsSecondTeam}</span>
+                          {editable && game.state === "pendiente" && (
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() =>
+                                  handleGameGoal(
+                                    game.id,
+                                    "secondTeam",
+                                    "decrement",
+                                    game.goalsSecondTeam
+                                  )
+                                }
+                                className="text-xs"
+                                variant={"ghost"}
+                              >
+                                -
+                              </Button>
+                              <Button
+                                onClick={() =>
+                                  handleGameGoal(
+                                    game.id,
+                                    "secondTeam",
+                                    "increment",
+                                    game.goalsSecondTeam
+                                  )
+                                }
+                                className="text-xs"
+                                variant={"ghost"}
+                              >
+                                +
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+
+                        <div
+                          className={clsx(
+                            "w-56 flex items-center gap-4 justify-end",
+                            {
+                              "opacity-20":
+                                game.winnerId !== game.secondTeamId &&
+                                game.winnerId !== null,
+                            }
+                          )}
+                        >
+                          <p className="flex-1 text-end whitespace-nowrap overflow-hidden text-ellipsis">
+                            {game.secondTeam.name}
+                          </p>
+                          <div className="bg-gray-800 px-2 py-2 min-w-16 max-w-16 aspect-square rounded-xl">
+                            <img
+                              className="w-full h-full object-contain"
+                              src={game.secondTeam.logo || DefaulShield}
+                            />
+                          </div>
+
+                          {showInfo && (
+                            <span className="cursor-pointer">
+                              <Modal
+                                title={
+                                  "Informacion del equipo " +
+                                  game.secondTeam.name
+                                }
+                                description="Informacion de los integrantes y historial de los ultimos 5 partidos"
+                                button={
+                                  <span className="cursor-pointer">
+                                    <Icon type={Icon.Types.INFO} />
+                                  </span>
+                                }
+                              >
+                                <div>
+                                  <img
+                                    src={game.secondTeam.logo}
+                                    className="object-cover rounded-2xl"
+                                    width={85}
+                                    height={85}
+                                  />
+                                  <h2 className="text-[22px] font-semibold">
+                                    Jugadores
+                                  </h2>
+                                  {game.secondTeam.players.map((v) => (
+                                    <p>
+                                      {v.name} {v.lastName}
+                                    </p>
+                                  ))}
+                                </div>
+
+                                <Prediction
+                                  amountVictories1={
+                                    game.secondTeam.amountVictories
+                                  }
+                                  amountVictories2={
+                                    game.firstTeam.amountVictories
+                                  }
+                                  prediction={prediction}
+                                  onSubmit={onSubmit}
+                                  game={game}
+                                  setPrediction={setPrediction}
+                                />
+
+                                <HistoryTable
+                                  clubId={game.secondTeam.id}
+                                  tournamentId={game.tournamentId}
+                                />
+                              </Modal>
+                            </span>
+                          )}
+                        </div>
                       </div>
+                      {editable && game.state === "pendiente" && (
+                        <Button
+                          className="text-xs"
+                          onClick={() => handleFinishGame(game.id)}
+                        >
+                          Finalizar partido
+                        </Button>
+                      )}
                     </div>
-                    {editable && game.state === "pendiente" && (
-                      <Button
-                        className="text-xs"
-                        onClick={() => handleFinishGame(game.id)}
-                      >
-                        Finalizar partido
-                      </Button>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </main>
             </>
           ))}

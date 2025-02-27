@@ -257,26 +257,72 @@ export function gameRoutes(router: FastifyInstance) {
     const { gameId } = request.params as { gameId: string }; //request.params son los parametros de mi ruta
     const game = await prisma.game.findUnique({
       where: { id: gameId },
+      include: {
+        tournament: true,
+      },
     });
+
     if (!game) {
       return reply.status(404).send({
         message: "El partido no existe.",
       });
     }
-    const gameWinner =
-      game.goalsFirstTeam > game.goalsSecondTeam
-        ? game.firstTeamId
-        : game.goalsFirstTeam < game.goalsSecondTeam
-        ? game.secondTeamId
-        : null;
-    if (!gameWinner) {
-      return reply.status(404).send({
-        message: "Tiene que haber un ganador.",
+
+    let gameWinner = null;
+    if (
+      game.phase === "final"
+        ? game.tournament.finalFormatId === "ida-vuelta-uuid"
+        : game.tournament.formatId === "ida-vuelta-uuid"
+    ) {
+      const otherGame = await prisma.game.findFirst({
+        where: {
+          firstTeamId: game.firstTeamId,
+          secondTeamId: game.secondTeamId,
+          tournamentId: game.tournamentId,
+          phase: game.phase,
+          id: { not: gameId },
+          state: "finalizado",
+        },
       });
+      if (otherGame) {
+        const firstTeamGoals = game.goalsFirstTeam + otherGame.goalsFirstTeam;
+        const secondTeamGoals =
+          game.goalsSecondTeam + otherGame.goalsSecondTeam;
+        gameWinner =
+          firstTeamGoals > secondTeamGoals
+            ? game.firstTeamId
+            : firstTeamGoals < secondTeamGoals
+            ? game.secondTeamId
+            : null;
+        if (!gameWinner) {
+          return reply.status(404).send({
+            message: "Tiene que haber un ganador de la ida y vuelta",
+          });
+        }
+      } else {
+        gameWinner =
+          game.goalsFirstTeam > game.goalsSecondTeam
+            ? game.firstTeamId
+            : game.goalsFirstTeam < game.goalsSecondTeam
+            ? game.secondTeamId
+            : null;
+      }
+    } else {
+      gameWinner =
+        game.goalsFirstTeam > game.goalsSecondTeam
+          ? game.firstTeamId
+          : game.goalsFirstTeam < game.goalsSecondTeam
+          ? game.secondTeamId
+          : null;
+      if (!gameWinner) {
+        return reply.status(404).send({
+          message: "Tiene que haber un ganador.",
+        });
+      }
     }
 
     const updatedGame = await prisma.game.update({
-      where : { id: gameId },
+      where: { id: gameId },
       data: {
         winnerId: gameWinner,
         state: "finalizado",

@@ -24,7 +24,11 @@ const TournamentPage = () => {
       </Modal>
       <div className="flex-1 overflow-auto flex flex-col gap-4">
         {data?.map((tournament) => (
-          <TournamentPageRow tournament={tournament} setData={setData} />
+          <TournamentPageRow
+            key={tournament.id}
+            tournament={tournament}
+            setData={setData}
+          />
         ))}
       </div>
     </section>

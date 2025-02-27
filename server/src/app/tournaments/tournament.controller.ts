@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { Game, PrismaClient } from "@prisma/client";
 import { FastifyInstance } from "fastify";
 import { ZodError } from "zod";
 import {
@@ -436,11 +436,7 @@ export function tournamentRoutes(router: FastifyInstance) {
           return reply.status(404).send({ message: "Torneo no encontrado." });
         }
 
-        let teams: {
-          id: string;
-          name: string;
-          logo: string | null;
-        }[] = [];
+        let teams: string[] = [];
         let gamesOfLastPhase: any[] | null = null;
 
         let nextPhase: string | null = null;
@@ -473,14 +469,59 @@ export function tournamentRoutes(router: FastifyInstance) {
             }
           }
 
-          teams = gamesOfLastPhase
-            .map((game) => {
-              return game.winner;
-            })
-            .filter((v) => !!v);
+          let games = gamesOfLastPhase;
+          if (
+            lastPhase === "final"
+              ? tournament.finalFormatId === "ida-vuelta-uuid"
+              : tournament.formatId === "ida-vuelta-uuid"
+          ) {
+            games = games.reduce((acc, game) => {
+              const existingGameIndex = acc.findIndex(
+                (g: Game) =>
+                  (g.firstTeamId === game.firstTeamId &&
+                    g.secondTeamId === game.secondTeamId) ||
+                  (g.firstTeamId === game.secondTeamId &&
+                    g.secondTeamId === game.firstTeamId)
+              );
+
+              if (existingGameIndex !== -1) {
+                acc[existingGameIndex].goalsFirstTeam += game.goalsFirstTeam;
+                acc[existingGameIndex].goalsSecondTeam += game.goalsSecondTeam;
+                acc[existingGameIndex].yellowCardsFirstTeam +=
+                  game.yellowCardsFirstTeam;
+                acc[existingGameIndex].yellowCardsSecondTeam +=
+                  game.yellowCardsSecondTeam;
+                acc[existingGameIndex].redCardsFirstTeam +=
+                  game.redCardsFirstTeam;
+                acc[existingGameIndex].redCardsSecondTeam +=
+                  game.redCardsSecondTeam;
+                acc[existingGameIndex].foulsFirstTeam += game.foulsFirstTeam;
+                acc[existingGameIndex].foulsSecondTeam += game.foulsSecondTeam;
+
+                if (
+                  acc[existingGameIndex].goalsFirstTeam >
+                  acc[existingGameIndex].goalsSecondTeam
+                ) {
+                  acc[existingGameIndex].winnerId = game.firstTeamId;
+                }
+                if (
+                  acc[existingGameIndex].goalsFirstTeam <
+                  acc[existingGameIndex].goalsSecondTeam
+                ) {
+                  acc[existingGameIndex].winnerId = game.secondTeamId;
+                }
+              } else {
+                acc.push({ ...game });
+              }
+
+              return acc;
+            }, []);
+          }
+
+          teams = games.map((game) => game.winnerId).filter((v) => !!v);
         } else {
           teams = tournament.tournamentClubs.map(
-            (clubCategory) => clubCategory.club
+            (clubCategory) => clubCategory.club.id
           );
         }
 
@@ -496,7 +537,7 @@ export function tournamentRoutes(router: FastifyInstance) {
         if (gamesOfLastPhase && shuffledTeams.length % 2 !== 0) {
           const firstTeam = shuffledTeams[0];
           const gameOfFirstTeam = gamesOfLastPhase.find(
-            (game) => game.winnerId === firstTeam.id
+            (game) => game.winnerId === firstTeam
           );
           await prisma.game.update({
             where: { id: gameOfFirstTeam.id },
@@ -507,6 +548,7 @@ export function tournamentRoutes(router: FastifyInstance) {
           shuffledTeams = shuffledTeams.slice(1);
         }
 
+        //!SOLO CUANDO ES LA PRIMERA FASE
         if (shuffledTeams.length % 2 !== 0 && tournament.games.length > 0) {
           return reply.status(400).send({
             message:
@@ -527,7 +569,7 @@ export function tournamentRoutes(router: FastifyInstance) {
           });
         } */
 
-        const fixtures = [];
+        const games = [];
         let currentDate = new Date(tournament.dateStart);
         currentDate.setHours(currentDate.getHours() + 4);
 
@@ -548,9 +590,9 @@ export function tournamentRoutes(router: FastifyInstance) {
             // Asegurar que la fecha no exceda la fecha de finalización del torneo
             if (currentDate > new Date(tournament.dateEnd)) break;
 
-            fixtures.push({
-              firstTeamId: shuffledTeams[i].id,
-              secondTeamId: shuffledTeams[i + 1].id,
+            const newGame = {
+              firstTeamId: shuffledTeams[i],
+              secondTeamId: shuffledTeams[i + 1],
               date: new Date(currentDate),
               tournamentId: id,
               goalsFirstTeam: 0,
@@ -562,7 +604,16 @@ export function tournamentRoutes(router: FastifyInstance) {
               foulsFirstTeam: 0,
               foulsSecondTeam: 0,
               phase: initialPhase,
-            });
+            };
+
+            if (
+              initialPhase === "final"
+                ? tournament.finalFormatId === "ida-vuelta-uuid"
+                : tournament.formatId === "ida-vuelta-uuid"
+            ) {
+              games.push(newGame);
+            }
+            games.push(newGame);
 
             // Incrementar la fecha en 1 día
             /* currentDate.setDate(currentDate.getDate() + 1); */
@@ -571,7 +622,7 @@ export function tournamentRoutes(router: FastifyInstance) {
 
         // Crear los partidos en la base de datos
         const createdGames = await prisma.game.createMany({
-          data: fixtures,
+          data: games,
         });
 
         // Marcar el fixture como generado
