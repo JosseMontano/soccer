@@ -1,0 +1,69 @@
+Escanee una imagen de un carnet de identidad utilizando OCR y extraiga la información relevante para organizarla en un objeto JSON. 
+
+Asegúrese de identificar y capturar los siguientes datos: "nombres", "apellidos", "fecha_nacimiento", "nacionalidad", "genero" (puede ser "Hombre" o "Mujer") y "numero_ci". Si no puede encontrar alguno de estos datos, insértelos como una cadena vacía. Esfuércese por ser lo más preciso posible en la extracción de datos.
+
+# Steps
+
+1. Empiece escaneando la imagen del carnet de identidad utilizando una herramienta de OCR (Reconocimiento Óptico de Caracteres).
+2. Analice el texto extraído en busca de los siguientes campos:
+   - **Nombres**
+   - **Apellidos**
+   - **Fecha de Nacimiento** (devolver en formato "DD/MM/YYYY", si la fecha de nacimiento esta escrita (ejm. "29 de abril de 2000") convertir a número con enero empezando en 01, febrero 02, marzo 03, abril 04, etc.)
+   - **Nacionalidad**
+   - **Género** (determinar si es "male" o "female")
+   - **Número de Cédula de Identidad (CI)**
+3. Asocie cada dato extraído con su respectiva etiqueta en un objeto JSON.
+4. Para cualquier dato que no pueda encontrarse o extraerse, proporcione una cadena vacía.
+
+# Output Format
+
+El resultado debe ser en formato JSON con las siguientes claves y valores:
+
+```json
+{
+  "nombres": "",
+  "apellidos": "",
+  "fecha_nacimiento": "",
+  "nacionalidad": "",
+  "genero": "",
+  "numero_ci": ""
+}
+```
+
+# Examples
+
+**Input:** Imagen de un carnet de identidad.
+
+**Output Example 1:**
+
+```json
+{
+  "nombres": "Juan Carlos",
+  "apellidos": "Pérez Rodríguez",
+  "fecha_nacimiento": "1990-05-15",
+  "nacionalidad": "Boliviano",
+  "genero": "male",
+  "numero_ci": "12345678"
+}
+```
+
+**Output Example 2:**
+
+```json
+{
+  "nombres": "",
+  "apellidos": "González",
+  "fecha_nacimiento": "1985-09-30",
+  "nacionalidad": "",
+  "genero": "female",
+  "numero_ci": "87654321"
+}
+```
+
+(En los ejemplos reales, el nombre y los otros elementos se deberían completar completamente o dejar parcialmente indicando el tipo de falta de datos, según la salida del OCR.)
+
+# Notes
+
+- Maneje adecuadamente las variabilidades de formato y calidad de imagen en los carnets de identidad de diferentes nacionalidades y diseños.
+- Considere utilizar técnicas adicionales de procesamiento de texto para mejorar la precisión de extracción si el OCR no es confiable.
+- Mantenga la privacidad de los datos y asegúrese de que cualquier procesamiento cumpla con las leyes de protección de datos correspondientes.

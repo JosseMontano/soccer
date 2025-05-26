@@ -8,6 +8,38 @@ const prisma = new PrismaClient();
 export const endPointGameEvents = "/games/events";
 
 export function gameRoutes(router: FastifyInstance) {
+  router.get(`/games/next/game`, async (request, reply) => {
+    try {
+      const nextGame = await prisma.game.findFirst({
+        where: {
+          date: {
+            gte: new Date(),
+          },
+        },
+        orderBy: {
+          date: "asc",
+        },
+        include: {
+          firstTeam: true,
+          secondTeam: true,
+        },
+      });
+      if (!nextGame) {
+        return reply.status(404).send({
+          message: "No hay partidos programados en el futuro.",
+        });
+      }
+      const response: ResponseType = {
+        message: "Partido programado obtenido exitosamente",
+        data: nextGame,
+        status: 200,
+      };
+      return reply.status(200).send(response);
+    } catch (error) {
+      return reply.status(500).send({ message: `Server error: ${error}` });
+    }
+  });
+
   // Agregar un nuevo evento de jugador
   router.post(`${endPointGameEvents}`, async (request, reply) => {
     try {

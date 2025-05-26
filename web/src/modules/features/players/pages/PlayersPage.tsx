@@ -18,6 +18,8 @@ const PlayersPage = () => {
   const deleteMutation = postData("DELETE /players/:id");
   const [playerSelected, setPlayerSelected] = useState<Player | null>(null);
 
+  const [open, setOpen] = useState(false);
+
   const handleDelete = (id: string) => {
     toastConfirm("Seguro que quieres eliminar el registro del jugador?", () => {
       deleteMutation(null, {
@@ -75,26 +77,15 @@ const PlayersPage = () => {
       cell: ({ row: { original: player } }) => {
         return (
           <div className="flex gap-2">
-            <Modal
-              title="Editar Jugadore"
-              description="Modifique los datos del jugador"
-              button={
-                <Button
-                  variant={"secondary"}
-                  onClick={() => {
-                    setPlayerSelected(player);
-                  }}
-                >
-                  Editar
-                </Button>
-              }
+            <Button
+              variant={"secondary"}
+              onClick={() => {
+                setPlayerSelected(player);
+                setOpen(true);
+              }}
             >
-              <PlayerForm
-                closeModal={() => {}}
-                setData={setData}
-                player={playerSelected}
-              />
-            </Modal>
+              Editar
+            </Button>
 
             <Button
               variant={"destructive"}
@@ -112,7 +103,9 @@ const PlayersPage = () => {
     <section className="flex-1 flex flex-col overflow-hidden p-6 gap-4">
       <div>Players</div>
       <Modal
-        title="Registro de jugadores"
+        open={open}
+        onOpenChange={setOpen}
+        title={playerSelected ? "Edición de jugador" : "Registro de jugadores"}
         description="Ingrese todos los datos del jugador"
         button={(() => {
           const permissos = AdminPermissos(user);
@@ -121,18 +114,18 @@ const PlayersPage = () => {
               <Button
                 onClick={() => {
                   setPlayerSelected(null);
+                  setOpen(true);
                 }}
               >
                 Añadir jugador
               </Button>
-              
             );
           }
           return null;
         })()}
       >
         <PlayerForm
-          closeModal={() => {}}
+          closeModal={() => setOpen(false)}
           setData={setData}
           player={playerSelected}
         />

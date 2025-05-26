@@ -17,6 +17,7 @@ const EditFixtureForm = ({ tournament, onSuccess }: Props) => {
   }, 0);
   const lastPhaseName = phases[lastPhase];
   const games = tournament.games.filter((game) => game.phase === lastPhaseName);
+  const [loading, setLoading] = useState(false);
 
   const { postData } = useFetch();
   const editFixtureMutation = postData("PUT /tournaments/:id/edit-fixture");
@@ -35,6 +36,7 @@ const EditFixtureForm = ({ tournament, onSuccess }: Props) => {
   );
 
   const handleSubmit = () => {
+    setLoading(true);
     editFixtureMutation(
       form.map((f) => ({
         id: f.id,
@@ -47,6 +49,9 @@ const EditFixtureForm = ({ tournament, onSuccess }: Props) => {
         onSuccess({ data, message }) {
           toastSuccess(message);
           onSuccess(data);
+        },
+        onSettled() {
+          setLoading(false);
         },
       }
     );
@@ -78,6 +83,7 @@ const EditFixtureForm = ({ tournament, onSuccess }: Props) => {
         </div>
       ))}
       <Button
+        disabled={loading}
         onClick={(e) => {
           e.preventDefault();
           handleSubmit();

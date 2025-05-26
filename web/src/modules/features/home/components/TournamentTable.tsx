@@ -10,7 +10,7 @@ interface Props {
 
 const TournamentTable = ({ date }: Props) => {
   const { fetchData } = useFetch();
-  const { data } = fetchData(
+  const { data, isLoading } = fetchData(
     `GET /tournaments/tournamentsPublic?date=${date}` as any
   );
 
@@ -65,9 +65,17 @@ const TournamentTable = ({ date }: Props) => {
 
   return (
     <div className="flex flex-col bg-gray-800 rounded-2xl overflow-hidden">
-      {tournament.map((t) => (
-        <TournamentTableRow tournament={t} key={t.id} />
-      ))}
+      {isLoading ? (
+        <div className="flex justify-center items-center py-2">
+          <p className="text-gray-400 text-lg">Cargando...</p>
+        </div>
+      ) : tournament.length === 0 ? (
+        <div className="flex justify-center items-center py-2">
+          <p className="text-gray-400 text-lg">No hay torneos disponibles</p>
+        </div>
+      ) : (
+        tournament.map((t) => <TournamentTableRow tournament={t} key={t.id} />)
+      )}
     </div>
   );
 };

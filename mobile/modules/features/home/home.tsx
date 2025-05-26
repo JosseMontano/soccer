@@ -20,7 +20,7 @@ import useFetch from "../../core/hooks/useFetch";
 import { ModalComp } from "../../core/components/modal";
 import { Game, TournamentFixture } from "./api/responses";
 import { ExtraInfo } from "./components/extraInfo";
-import Icon from 'react-native-vector-icons/AntDesign';
+import Icon from "react-native-vector-icons/AntDesign";
 import { channel } from "../../core/libs/pusher";
 import DateTimePicker from "@react-native-community/datetimepicker";
 //caretdown caretup
@@ -34,8 +34,10 @@ export const Home = () => {
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const { data } = fetchData(
-    `GET /tournaments/tournamentsPublic?date=${selectedDate.toISOString().split("T")[0]}` as any
+  const { data, isLoading } = fetchData(
+    `GET /tournaments/tournamentsPublic?date=${
+      selectedDate.toISOString().split("T")[0]
+    }` as any
   );
 
   const [isOpen, setIsOpen] = useState(false);
@@ -166,7 +168,10 @@ export const Home = () => {
         <Header />
         <View style={styles.containerHeader}>
           <Text style={styles.title}>Torneos</Text>
-          <TouchableOpacity onPress={toggleDatePicker} style={styles.dateButton}>
+          <TouchableOpacity
+            onPress={toggleDatePicker}
+            style={styles.dateButton}
+          >
             <Text style={styles.dateText}>
               {selectedDate.toISOString().split("T")[0]}
             </Text>
@@ -176,104 +181,122 @@ export const Home = () => {
           <DateTimePicker
             value={selectedDate}
             mode="date"
-            display={Platform.OS === "ios" ? "spinner" : "default"} 
+            display={Platform.OS === "ios" ? "spinner" : "default"}
             onChange={handleDateChange}
+            themeVariant="dark"
           />
-        )}  
-        <View style={styles.containerHeader}>
-          <Text style={styles.title}>Torneos</Text>
-          <Text style={styles.title}>22-10-14</Text>
-        </View>
+        )}
 
-        {tournament?.map((v) => {
-          const { isCollapsed = true, animatedHeight = new Animated.Value(0) } =
-            accordions[v.id] || {};
-          return (
-            <View style={styles.containerTable} key={v.id}>
-              <View style={styles.infoContainer}>
-                <Text style={styles.title}>{v.name}</Text>
-                <TouchableOpacity onPress={() => toggleCollapse(v.id)}>
-                  <Text style={styles.collapseText}>
-                    {/*@ts-ignore  */}
-                    {isCollapsed ? <Icon name="caretdown" size={15}/> :  <Icon name="caretup" size={15}/>}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Animated Collapsible Section */}
-              <Animated.View style={[styles.table, { height: animatedHeight }]}>
-                <Text style={styles.titleTable}>Partidos</Text>
-                {v.games.map((game) => (
-                  <View key={game.id} style={styles.gameRow}>
-                    <Image
-                      style={styles.logoTeam}
-                      source={{ uri: game.firstTeam.logo }}
-                    />
-                    <Text
-                      style={styles.gameText}
-                      onPress={() => {
-                        selectTeam(game, "firstTeam");
-                      }}
-                    >
-                      {truncateText(game.firstTeam.name)}
+        {isLoading ? (
+          <Text style={{ color: "#FFFFFF" }}>Cargando...</Text>
+        ) : tournament.length === 0 ? (
+          <Text style={{ color: "#FFFFFF" }}>No hay torneos en esta fecha</Text>
+        ) : (
+          tournament?.map((v) => {
+            const {
+              isCollapsed = true,
+              animatedHeight = new Animated.Value(0),
+            } = accordions[v.id] || {};
+            return (
+              <View style={styles.containerTable} key={v.id}>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.title}>{v.name}</Text>
+                  <TouchableOpacity onPress={() => toggleCollapse(v.id)}>
+                    <Text style={styles.collapseText}>
+                      {isCollapsed ? (
+                        <>
+                          {/*@ts-ignore  */}
+                          <Icon name="caretdown" size={15} />
+                        </>
+                      ) : (
+                        <>
+                          {/*@ts-ignore  */}
+                          <Icon name="caretup" size={15} />
+                        </>
+                      )}
                     </Text>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        gap: 9,
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text style={styles.gameText}>{game.goalsFirstTeam}</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Animated Collapsible Section */}
+                <Animated.View
+                  style={[styles.table, { height: animatedHeight }]}
+                >
+                  <Text style={styles.titleTable}>Partidos</Text>
+                  {v.games.map((game) => (
+                    <View key={game.id} style={styles.gameRow}>
+                      <Image
+                        style={styles.logoTeam}
+                        source={{ uri: game.firstTeam.logo }}
+                      />
                       <Text
-                        style={[
-                          styles.gameText,
-                          {
-                            backgroundColor: secondaryColor,
-                            padding: 6,
-                            borderRadius: 50,
-                          },
-                        ]}
+                        style={styles.gameText}
+                        onPress={() => {
+                          selectTeam(game, "firstTeam");
+                        }}
                       >
-                        vs
+                        {truncateText(game.firstTeam.name)}
                       </Text>
-                      <Text style={styles.gameText}>
-                        {game.goalsSecondTeam}
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          gap: 9,
+                          alignItems: "center",
+                        }}
+                      >
+                        <Text style={styles.gameText}>
+                          {game.goalsFirstTeam}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.gameText,
+                            {
+                              backgroundColor: secondaryColor,
+                              padding: 6,
+                              borderRadius: 50,
+                            },
+                          ]}
+                        >
+                          vs
+                        </Text>
+                        <Text style={styles.gameText}>
+                          {game.goalsSecondTeam}
+                        </Text>
+                      </View>
+                      <Text
+                        style={styles.gameText}
+                        onPress={() => selectTeam(game, "secondTeam")}
+                      >
+                        {truncateText(game.secondTeam.name)}
                       </Text>
+                      <Image
+                        style={styles.logoTeam}
+                        source={{ uri: game.secondTeam.logo }}
+                      />
                     </View>
-                    <Text
-                      style={styles.gameText}
-                      onPress={() => selectTeam(game, "secondTeam")}
-                    >
-                      {truncateText(game.secondTeam.name)}
-                    </Text>
-                    <Image
-                      style={styles.logoTeam}
-                      source={{ uri: game.secondTeam.logo }}
-                    />
-                  </View>
-                ))}
-              </Animated.View>
-            </View>
-          );
-        })}
+                  ))}
+                </Animated.View>
+              </View>
+            );
+          })
+        )}
 
         {gameSelected.id && (
-           <ModalComp
-           setVisible={setIsOpen}
-           visible={isOpen}
-           title="Informacion del equipo"
-           children={
-             <ExtraInfo
-               gameSelected={gameSelected[selectedTeam]}
-               onSubmit={onSubmit}
-               prediction={prediction}
-               setPrediction={setPrediction}
-               clubId={gameSelected[selectedTeam].id}
-               tournamentId={gameSelected.tournamentId}
-             />
-           }
-         /> 
+          <ModalComp
+            setVisible={setIsOpen}
+            visible={isOpen}
+            title="Informacion del equipo"
+            children={
+              <ExtraInfo
+                gameSelected={gameSelected[selectedTeam]}
+                onSubmit={onSubmit}
+                prediction={prediction}
+                setPrediction={setPrediction}
+                clubId={gameSelected[selectedTeam].id}
+                tournamentId={gameSelected.tournamentId}
+              />
+            }
+          />
         )}
       </View>
     </ScrollView>
@@ -315,7 +338,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     borderRadius: 6,
     paddingHorizontal: 10,
-    paddingVertical:5,
+    paddingVertical: 5,
     flexDirection: "column",
     gap: 10,
     height: "auto",
@@ -328,7 +351,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems:"center"
+    alignItems: "center",
   },
   titleTable: {
     color: "#fff",

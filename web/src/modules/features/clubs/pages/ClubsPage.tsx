@@ -13,6 +13,7 @@ const ClubsPage = () => {
   const { data, setData } = fetchData("GET /clubs");
   const deleteMutation = postData("DELETE /clubs/:id");
   const [clubSelected, setClubSelected] = useState<Club | null>(null);
+  const [open, setOpen] = useState(false);
 
   const handleDelete = (id: string) => {
     toastConfirm("¿Seguro que quieres eliminar este club?", () => {
@@ -28,13 +29,11 @@ const ClubsPage = () => {
 
   const { user } = useUserStore();
   return (
-    <>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-lg font-bold">Lista de Clubs</h1>
-      </div>
-
+    <div className="flex flex-col p-8 gap-5">
       <Modal
         title="Registro de Clubes"
+        open={open}
+        onOpenChange={setOpen}
         button={(() => {
           const permissos = AdminPermissos(user);
           if (permissos) {
@@ -42,6 +41,7 @@ const ClubsPage = () => {
               <Button
                 onClick={() => {
                   setClubSelected(null);
+                  setOpen(true);
                 }}
               >
                 Añadir Club
@@ -53,11 +53,15 @@ const ClubsPage = () => {
         description="Añadir Club"
       >
         <ClubForm
-          closeModal={() => ({})}
+          closeModal={() => setOpen(false)}
           setData={setData}
           club={clubSelected}
         />
       </Modal>
+
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-lg font-bold">Lista de Clubs</h1>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {data?.map((club) => (
@@ -67,31 +71,25 @@ const ClubsPage = () => {
               <img src={club.logo} alt={club.name} className="w-20 h-20" />
             )}
             <div className="flex gap-2 mt-2">
-              <button onClick={() => handleDelete(club.id)}>Eliminar</button>
-              <Modal
-                title="Editar Equipo"
-                description="Edita los datos del equipo"
-                button={
-                  <button
-                    onClick={() => {  
-                      setClubSelected(club);
-                    }}
-                  >
-                    Editar
-                  </button>
-                }
+              <Button
+                onClick={() => {
+                  setClubSelected(club);
+                  setOpen(true);
+                }}
               >
-                <ClubForm
-                  closeModal={() => ({})}
-                  setData={setData}
-                  club={clubSelected}
-                />
-              </Modal>
+                Editar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => handleDelete(club.id)}
+              >
+                Eliminar
+              </Button>
             </div>
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 };
 

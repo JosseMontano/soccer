@@ -7,6 +7,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { ClubDTOschema } from "../validations/ClubDTO.schema";
 import { sendCloudinary } from "@/modules/core/utils/cloudinary";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   club: Club | null;
@@ -17,6 +18,8 @@ interface Props {
 const ClubForm = ({ closeModal, setData, club }: Props) => {
   const { postData, fetchData } = useFetch();
   const { data: categories } = fetchData("GET /categories");
+  const [loading, setLoading] = useState(false);
+
   const postMutation = postData("POST /clubs");
   const putMutation = postData("PUT /clubs/:id");
   const {
@@ -33,12 +36,14 @@ const ClubForm = ({ closeModal, setData, club }: Props) => {
 
   const [progress, setProgress] = useState(0);
   console.log(progress);
+
   const onSubmit = async (form: ClubDTO) => {
     let url: string | null = null;
     if (form.logo.length > 0) {
       url = await sendCloudinary(form.logo[0], setProgress);
     }
 
+    setLoading(true);
     if (club === null) {
       postMutation(
         {
@@ -51,6 +56,9 @@ const ClubForm = ({ closeModal, setData, club }: Props) => {
             closeModal();
             //@ts-expect-error the back is returning other property
             setData((prev) => [...prev, res.data.club]);
+          },
+          onSettled: () => {
+            setLoading(false);
           },
         }
       );
@@ -69,6 +77,9 @@ const ClubForm = ({ closeModal, setData, club }: Props) => {
               prev.map((v) => (v.id === res.data.id ? res.data : v))
             );
           },
+          onSettled: () => {
+            setLoading(false);
+          },
         }
       );
     }
@@ -81,7 +92,7 @@ const ClubForm = ({ closeModal, setData, club }: Props) => {
         placeholder="Ingrese el nombre del club"
         {...register("name")}
       />
-      <p>{errors.name?.message}</p>
+      <p className="text-rose-500 text-sm">{errors.name?.message}</p>
       <select {...register("categoryId")}>
         <option value="">Seleccione una categoria</option>
         {categories?.map((c) => (
@@ -90,8 +101,11 @@ const ClubForm = ({ closeModal, setData, club }: Props) => {
           </option>
         ))}
       </select>
-      <input type="file" {...register("logo")} />
-      <button type="submit">{club ? "Editar Club" : "Registrar Club"}</button>
+      <input className="text-white" type="file" {...register("logo")} />
+      <p className="text-white">{progress.toFixed(2)}% subido</p>
+      <Button disabled={loading} type="submit">
+        {club ? "Editar Club" : "Registrar Club"}
+      </Button>
     </form>
   );
 };

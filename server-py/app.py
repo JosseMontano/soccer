@@ -10,10 +10,7 @@ from sklearn.model_selection import train_test_split
 import pytesseract
 from PIL import Image
 
-
-
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-
+pytesseract.pytesseract.tesseract_cmd = r'/opt/homebrew/bin/tesseract'
 
 # Create FastAPI instance
 app = FastAPI()
@@ -123,6 +120,7 @@ async def datos(request: Request):
         apellidos = None
         fechaNacimiento = None
         ci = None
+        
         for i, line in enumerate(lines):
             if "NOMBRES" in line or "pertenece" in line:
                 nombres = lines[i + 1] if i + 1 < len(lines) else ""
@@ -136,6 +134,7 @@ async def datos(request: Request):
                     fechaNacimiento = None
             if "N°" in line:
                 ci = line.split("N°")[1].strip().replace(" ", "")
+                
         result = {"nombres": nombres, "apellidos": apellidos, "fechaNacimiento": fechaNacimiento, "ci": ci, "raw": lines }
         return {"message": "Imagen escaneada correctamente", "status": 200, "data":result}
     except Exception as e:

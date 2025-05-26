@@ -5,6 +5,8 @@ import { Tournament } from "../api/responses";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { TournamentDTOschema } from "../validations/TournamentDTO.schema";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   tournament: Tournament | null;
@@ -16,6 +18,8 @@ const TournamentForm = ({ closeModal, setData, tournament }: Props) => {
   const { postData, fetchData } = useFetch();
   const { data: formats } = fetchData("GET /formats");
   const { data: categories } = fetchData("GET /categories");
+  const [loading, setLoading] = useState(false);
+
   const postMutation = postData("POST /tournaments");
   const putMutation = postData("PUT /tournaments/:id");
   const {
@@ -47,6 +51,7 @@ const TournamentForm = ({ closeModal, setData, tournament }: Props) => {
   ]);
   const onSubmit = (form: TournamentDTO) => {
     console.log(form);
+    setLoading(true);
     if (tournament === null) {
       postMutation(
         {
@@ -57,6 +62,9 @@ const TournamentForm = ({ closeModal, setData, tournament }: Props) => {
             toastSuccess(res.message);
             closeModal();
             setData((prev) => [...prev, res.data]);
+          },
+          onSettled: () => {
+            setLoading(false);
           },
         }
       );
@@ -74,6 +82,9 @@ const TournamentForm = ({ closeModal, setData, tournament }: Props) => {
               prev.map((v) => (v.id === res.data.id ? res.data : v))
             );
           },
+          onSettled: () => {
+            setLoading(false);
+          },
         }
       );
     }
@@ -86,25 +97,25 @@ const TournamentForm = ({ closeModal, setData, tournament }: Props) => {
         placeholder="Ingrese el nombre del torneo"
         {...register("name")}
       />
-      <p>{errors.name?.message}</p>
+      <p className="text-rose-500 text-sm">{errors.name?.message}</p>
       <input
         type="text"
         placeholder="Ingrese la descripcion del torneo"
         {...register("description")}
       />
-      <p>{errors.description?.message}</p>
+      <p className="text-rose-500 text-sm">{errors.description?.message}</p>
       <input
         type="date"
         placeholder="Ingrese la fecha que inicia el torneo"
         {...register("dateStart")}
       />
-      <p>{errors.dateStart?.message}</p>
+      <p className="text-rose-500 text-sm">{errors.dateStart?.message}</p>
       <input
         type="date"
         placeholder="Ingrese la fecha que termina el torneo"
         {...register("dateEnd")}
       />
-      <p>{errors.dateEnd?.message}</p>
+      <p className="text-rose-500 text-sm">{errors.dateEnd?.message}</p>
       <select {...register("formatId")}>
         <option value="">Seleccione un formato</option>
         {formats?.map((c) => (
@@ -113,7 +124,7 @@ const TournamentForm = ({ closeModal, setData, tournament }: Props) => {
           </option>
         ))}
       </select>
-      <p>{errors.formatId?.message}</p>
+      <p className="text-rose-500 text-sm">{errors.formatId?.message}</p>
       <select {...register("finalFormatId")}>
         <option value="">Seleccione el formato final</option>
         {formats?.map((c) => (
@@ -122,7 +133,7 @@ const TournamentForm = ({ closeModal, setData, tournament }: Props) => {
           </option>
         ))}
       </select>
-      <p>{errors.finalFormatId?.message}</p>
+      <p className="text-rose-500 text-sm">{errors.finalFormatId?.message}</p>
       <select {...register("categoryId")}>
         <option value="">Seleccione la categoria del torneo</option>
         {categories?.map((c) => (
@@ -131,7 +142,7 @@ const TournamentForm = ({ closeModal, setData, tournament }: Props) => {
           </option>
         ))}
       </select>
-      <p>{errors.categoryId?.message}</p>
+      <p className="text-rose-500 text-sm">{errors.categoryId?.message}</p>
       <div>
         {clubs?.map((c) => (
           <div className="flex">
@@ -140,10 +151,10 @@ const TournamentForm = ({ closeModal, setData, tournament }: Props) => {
           </div>
         ))}
       </div>
-      <p>{errors.clubIds?.message}</p>
-      <button type="submit">
+      <p className="text-rose-500 text-sm">{errors.clubIds?.message}</p>
+      <Button disabled={loading} type="submit">
         {tournament ? "Editar torneo" : "Publicar torneo"}
-      </button>
+      </Button>
     </form>
   );
 };

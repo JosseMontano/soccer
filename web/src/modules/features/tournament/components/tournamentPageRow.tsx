@@ -91,8 +91,8 @@ const TournamentPageRow = ({ tournament, setData }: Props) => {
         </Button>
       ) : (
         <Modal
-          title="Registro de Torneos"
-          description="Ingrese todos los datos del torneo"
+          title="Edición de fechas del fixture"
+          description="Ingrese fechas"
           button={<Button variant="secondary">Editar fase</Button>}
           open={open}
           onOpenChange={setOpen}

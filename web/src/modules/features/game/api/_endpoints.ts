@@ -8,11 +8,16 @@ declare global {
       request: never;
       response: Game[];
     };
+    "GET /games/next/game": {
+      params: never;
+      request: never;
+      response: Game;
+    };
     "POST /games/events/prediction": {
       params: never;
       request: {
-        amountVictoriesTeam1: number,
-        amountVictoriesTeam2: number
+        amountVictoriesTeam1: number;
+        amountVictoriesTeam2: number;
       };
       response: string;
     };
@@ -38,6 +43,6 @@ declare global {
         action: "increment" | "decrement";
       };
       response: Game;
-    }
+    };
   }
 }

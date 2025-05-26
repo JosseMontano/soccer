@@ -31,8 +31,10 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
-  form input, form option, select{
-    color:black;
+  form input,
+  form option,
+  select {
+    color: black;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -69,4 +71,22 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #101827;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #497cef;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: blue;
 }

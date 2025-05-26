@@ -3,10 +3,12 @@ import Modal from "@/modules/core/components/ui/Modal";
 import useFetch from "@/modules/core/hooks/useFetch";
 import TournamentForm from "../components/tournamentForm";
 import TournamentPageRow from "../components/tournamentPageRow";
+import { useState } from "react";
 
 const TournamentPage = () => {
   const { fetchData } = useFetch();
   const { data, setData } = fetchData("GET /tournaments");
+  const [open, setOpen] = useState(false);
 
   return (
     <section className="flex-1 flex flex-col overflow-hidden p-6 gap-4">
@@ -14,10 +16,12 @@ const TournamentPage = () => {
       <Modal
         title="Registro de Torneos"
         description="Ingrese todos los datos del torneo"
-        button={<Button>Añadir Torneo</Button>}
+        open={open}
+        onOpenChange={setOpen}
+        button={<Button onClick={() => setOpen(true)}>Añadir Torneo</Button>}
       >
         <TournamentForm
-          closeModal={() => {}}
+          closeModal={() => setOpen(false)}
           setData={setData}
           tournament={null}
         />

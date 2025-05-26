@@ -13,4 +13,5 @@ export interface Game {
   amountGoalsSecondTeam?: number;
   winner?: string;
   tournamentId: string;
+  date: string;
 }

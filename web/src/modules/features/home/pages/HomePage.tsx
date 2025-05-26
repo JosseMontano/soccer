@@ -17,7 +17,7 @@ const HomePage = () => {
       <Banner />
       <div className="flex justify-between items-center">
         <strong className="text-3xl font-extrabold">Torneos</strong>
-        <div className="flex flex-col">
+        <form className="flex flex-col">
           <p className="opacity-80 flex items-center gap-2 text-sm">
             <div className="h-6 aspect-square">
               <Icon type={Icon.Types.CALENDAR} />
@@ -27,10 +27,19 @@ const HomePage = () => {
           <input
             className="text-black"
             type="date"
+            defaultValue={getTodayUtc()}
             onChange={(e) => (dateRef.current = e.target.value)}
           />
-          <button onClick={handleSaveDate}>Filtrar</button>
-        </div>
+          <button
+            type="submit"
+            onClick={(e) => {
+              e.preventDefault();
+              handleSaveDate();
+            }}
+          >
+            Filtrar
+          </button>
+        </form>
       </div>
       <TournamentTable date={date} />
     </section>
